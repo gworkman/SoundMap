@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">@color/osuScarlet</color>
+    <color name="colorPrimaryDark">@color/osuScarletDark</color>
+    <color name="colorAccent">@color/osuGrey</color>
+
+    <color name="osuScarletLight">#d32f2f</color>
+    <color name="osuScarlet">#bb0000</color>
+    <color name="osuScarletDark">#960000</color>
+    <color name="osuGreyLight">#c2c2c2</color>
+    <color name="osuGrey">#666666</color>
+    <color name="osuGreyDark">#474747</color>
+</resources>

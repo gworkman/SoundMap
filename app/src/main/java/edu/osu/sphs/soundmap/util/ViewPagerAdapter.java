@@ -4,6 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.util.Log;
+import android.util.SparseArray;
 
 import edu.osu.sphs.soundmap.fragments.MapFragment;
 import edu.osu.sphs.soundmap.fragments.MeasureFragment;

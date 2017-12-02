@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.fragments.MeasureFragment;
 import edu.osu.sphs.soundmap.util.ViewPagerAdapter;
 
 /**
@@ -24,8 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private ViewPagerAdapter pagerAdapter;
     private FloatingActionButton fab;
-    private ArgbEvaluator evaluator = new ArgbEvaluator();
-    private Integer[] colors = new Integer[3];
+    private boolean fabIsSetup = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
         getViews();
         setupBottomNav();
         setupPager();
-        //setupColors();
     }
 
     /**
@@ -63,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.menu_measure:
                         // scroll to the measure fragment
                         viewPager.setCurrentItem(1, true);
+                        if (!fabIsSetup) setupFab();
                         break;
                     case R.id.menu_profile:
                         // required for a smooth transition with the fab
@@ -104,27 +104,20 @@ public class MainActivity extends AppCompatActivity {
                         if (translation != 0) fab.setTranslationY(translation);
                         break;
                 }
-
-
-
-                /*if (position < colors.length - 1) {
-                    viewPager.setBackgroundColor((Integer) evaluator.evaluate(positionOffset,
-                            colors[position], colors[position + 1]));
-                }*/
             }
         });
     }
 
-/*    private void setupColors() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            colors[0] = getResources().getColor(android.R.color.background_light, getTheme());
-            colors[1] = getResources().getColor(R.color.osuScarlet, getTheme());
-            colors[2] = colors[0];
-        } else {
-            colors[0] = getResources().getColor(android.R.color.background_light);
-            colors[1] = getResources().getColor(R.color.osuScarlet);
-            colors[2] = colors[0];
-        }
-    }*/
+    /**
+     * setupFab() adds the onClickListener to the fab using the MeasureFragment in the viewPager.
+     * This method should only be called once to increase performance.
+     */
+    private void setupFab() {
+        MeasureFragment measureFragment = (MeasureFragment) getSupportFragmentManager().findFragmentByTag(
+                "android:switcher:" + R.id.viewPager + ":" + viewPager.getCurrentItem()
+        );
+        fab.setOnClickListener(measureFragment);
+        fabIsSetup = true;
+    }
 
 }

@@ -1,13 +1,31 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
     tools:context="edu.osu.sphs.soundmap.fragments.MeasureFragment">
 
-
-    <Chronometer
-        android:id="@+id/chronometer2"
+    <TextView
+        android:id="@+id/timer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-</FrameLayout>
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp"
+        android:textSize="40sp"
+        android:text="30.0 seconds"/>
+
+    <!--Eventually have a custom graph with the measurements plotted-->
+
+    <!--Eventually get a visualization of current dB level-->
+
+    <TextView
+        android:id="@+id/dB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/timer"
+        android:textSize="60sp"
+        android:text="0 dB"/>
+
+
+</RelativeLayout>

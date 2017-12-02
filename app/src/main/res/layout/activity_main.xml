@@ -31,7 +31,6 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="-98dp"
         android:src="@drawable/ic_record"
-        app:backgroundTint="@color/osuScarlet"
-        app:elevation="8dp"/>
+        app:backgroundTint="@color/osuScarlet"/>
 
 </RelativeLayout>

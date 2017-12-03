@@ -1,14 +1,11 @@
 package edu.osu.sphs.soundmap.activities;
 
-import android.animation.ArgbEvaluator;
-import android.content.res.Resources;
-import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 

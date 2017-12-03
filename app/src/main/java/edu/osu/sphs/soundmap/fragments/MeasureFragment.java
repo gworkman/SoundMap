@@ -10,19 +10,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.util.MeasureTask;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link MeasureFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MeasureFragment extends Fragment implements View.OnClickListener {
+public class MeasureFragment extends Fragment implements View.OnClickListener, MeasureTask.OnUpdateCallback {
 
     private TextView timer;
+    private TextView dB;
     private FloatingActionButton fab;
     private boolean isRunning = false;
     private CountDownTimer chronometer;
+    private MeasureTask measureTask;
 
     public MeasureFragment() {
         // Required empty public constructor
@@ -55,11 +60,17 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         timer = view.findViewById(R.id.timer);
+        dB = view.findViewById(R.id.dB);
     }
 
     // This is the onClick method for the fab in MainActivity
     @Override
     public void onClick(View v) {
+        if (measureTask == null) {
+            measureTask = new MeasureTask();
+            measureTask.setCallback(this);
+        }
+
         if (!isRunning) {
             fab = (FloatingActionButton) v;
             chronometer = new CountDownTimer(30000, 100) {
@@ -74,16 +85,27 @@ public class MeasureFragment extends Fragment implements View.OnClickListener {
                 @Override
                 public void onFinish() {
                     fab.setImageResource(R.drawable.ic_record);
+                    isRunning = false;
+                    measureTask = null;
                 }
             }.start();
             fab.setImageResource(R.drawable.ic_stop);
             isRunning = true;
+            measureTask.execute(getContext().getFilesDir().getPath() + "/temp");
         } else {
             chronometer.cancel();
             String timerResetValue = "30.0 seconds";
             timer.setText(timerResetValue);
             fab.setImageResource(R.drawable.ic_record);
             isRunning = false;
+            measureTask.cancel(true);
+            measureTask = null;
         }
+    }
+
+    @Override
+    public void onUpdate(double dB) {
+        String text = String.format(Locale.US, "%.02f", dB) + " dB";
+        this.dB.setText(text);
     }
 }

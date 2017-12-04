@@ -1,9 +1,13 @@
 package edu.osu.sphs.soundmap.fragments;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +18,7 @@ import java.util.Locale;
 
 import edu.osu.sphs.soundmap.R;
 import edu.osu.sphs.soundmap.util.MeasureTask;
+import edu.osu.sphs.soundmap.util.Values;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -66,40 +71,47 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     // This is the onClick method for the fab in MainActivity
     @Override
     public void onClick(View v) {
-        if (measureTask == null) {
-            measureTask = new MeasureTask();
-            measureTask.setCallback(this);
-        }
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
 
-        if (!isRunning) {
-            fab = (FloatingActionButton) v;
-            chronometer = new CountDownTimer(30000, 100) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    int seconds = (int) (millisUntilFinished / 1000);
-                    int decimal = (int) (millisUntilFinished % 1000 / 100.0);
-                    String timerValue = seconds + "." + decimal + " seconds";
-                    timer.setText(timerValue);
-                }
+            if (measureTask == null) {
+                measureTask = new MeasureTask();
+                measureTask.setCallback(this);
+            }
 
-                @Override
-                public void onFinish() {
-                    fab.setImageResource(R.drawable.ic_record);
-                    isRunning = false;
-                    measureTask = null;
-                }
-            }.start();
-            fab.setImageResource(R.drawable.ic_stop);
-            isRunning = true;
-            measureTask.execute(getContext().getFilesDir().getPath() + "/temp");
+            if (!isRunning) {
+                fab = (FloatingActionButton) v;
+                chronometer = new CountDownTimer(30000, 100) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        int seconds = (int) (millisUntilFinished / 1000);
+                        int decimal = (int) (millisUntilFinished % 1000 / 100.0);
+                        String timerValue = seconds + "." + decimal + " seconds";
+                        timer.setText(timerValue);
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        fab.setImageResource(R.drawable.ic_record);
+                        isRunning = false;
+                        measureTask = null;
+                    }
+                }.start();
+                fab.setImageResource(R.drawable.ic_stop);
+                isRunning = true;
+                measureTask.execute(getContext().getFilesDir().getPath() + "/temp");
+
+            } else {
+                chronometer.cancel();
+                String timerResetValue = "30.0 seconds";
+                timer.setText(timerResetValue);
+                fab.setImageResource(R.drawable.ic_record);
+                isRunning = false;
+                measureTask.cancel(true);
+                measureTask = null;
+            }
+
         } else {
-            chronometer.cancel();
-            String timerResetValue = "30.0 seconds";
-            timer.setText(timerResetValue);
-            fab.setImageResource(R.drawable.ic_record);
-            isRunning = false;
-            measureTask.cancel(true);
-            measureTask = null;
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, Values.AUDIO_REQUEST_CODE);
         }
     }
 
@@ -107,5 +119,15 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onUpdate(double dB) {
         String text = String.format(Locale.US, "%.02f", dB) + " dB";
         this.dB.setText(text);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case Values.AUDIO_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    fab.callOnClick();
+                }
+        }
     }
 }

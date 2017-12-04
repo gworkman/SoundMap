@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import edu.osu.sphs.soundmap.R;
 import edu.osu.sphs.soundmap.fragments.MeasureFragment;
 import edu.osu.sphs.soundmap.util.ViewPagerAdapter;
@@ -23,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPagerAdapter pagerAdapter;
     private FloatingActionButton fab;
     private boolean fabIsSetup = false;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
         getViews();
         setupBottomNav();
         setupPager();
+        setupFirebase();
     }
 
     /**
@@ -116,5 +120,10 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(measureFragment);
         fabIsSetup = true;
     }
+
+    private void setupFirebase() {
+        this.auth = FirebaseAuth.getInstance();
+    }
+
 
 }

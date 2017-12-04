@@ -10,4 +10,9 @@
     <color name="osuGreyLight">#c2c2c2</color>
     <color name="osuGrey">#666666</color>
     <color name="osuGreyDark">#474747</color>
+
+    <color name="loginBackgroundGrey">#f3f3f3</color>
+    <color name="loginStroke">#acacac</color>
+
+    <color name="dark">#8d606060</color>
 </resources>

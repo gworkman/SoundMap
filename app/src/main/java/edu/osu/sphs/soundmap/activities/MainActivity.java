@@ -4,21 +4,32 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.fragments.LoginFragment;
+import edu.osu.sphs.soundmap.fragments.MapFragment;
 import edu.osu.sphs.soundmap.fragments.MeasureFragment;
+import edu.osu.sphs.soundmap.fragments.ProfileFragment;
 import edu.osu.sphs.soundmap.util.ViewPagerAdapter;
 
 /**
  * Created by Gus Workman on 11/22/2017. This is the main activity for the application
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements FirebaseAuth.AuthStateListener,
+        ViewPager.OnPageChangeListener {
+
+    private static final String TAG = "MainActivity";
 
     private BottomNavigationView bottomNavigationView;
     private ViewPager viewPager;
@@ -26,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private boolean fabIsSetup = false;
     private FirebaseAuth auth;
+    private List<Fragment> fragments = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getViews();
         setupBottomNav();
-        setupPager();
         setupFirebase();
+        setupPager();
     }
 
     /**
@@ -82,31 +94,18 @@ public class MainActivity extends AppCompatActivity {
      * item on page scroll.
      */
     private void setupPager() {
-        pagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(pagerAdapter);
-        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                MenuItem item = bottomNavigationView.getMenu().getItem(position);
-                bottomNavigationView.setSelectedItemId(item.getItemId());
-                if (position == 1) fab.setVisibility(View.VISIBLE);
-            }
+        fragments.add(MapFragment.newInstance());
+        fragments.add(MeasureFragment.newInstance());
+        if (auth.getCurrentUser() != null) {
+            fragments.add(ProfileFragment.newInstance());
+        } else {
+            fragments.add(LoginFragment.newInstance());
+        }
 
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                int translation;
-                switch (position) {
-                    case 1:
-                        translation = (int) (-2 * fab.getHeight() + 2 * fab.getHeight() * positionOffset);
-                        if (translation != 0) fab.setTranslationY(translation);
-                        break;
-                    default:
-                        translation = (int) (-2 * fab.getHeight() * positionOffset);
-                        if (translation != 0) fab.setTranslationY(translation);
-                        break;
-                }
-            }
-        });
+        pagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments);
+        viewPager.setAdapter(pagerAdapter);
+        viewPager.addOnPageChangeListener(this);
+        viewPager.setOffscreenPageLimit(2);
     }
 
     /**
@@ -114,16 +113,57 @@ public class MainActivity extends AppCompatActivity {
      * This method should only be called once to increase performance.
      */
     private void setupFab() {
-        MeasureFragment measureFragment = (MeasureFragment) getSupportFragmentManager().findFragmentByTag(
-                "android:switcher:" + R.id.viewPager + ":" + viewPager.getCurrentItem()
-        );
+        MeasureFragment measureFragment = (MeasureFragment) fragments.get(1);
         fab.setOnClickListener(measureFragment);
         fabIsSetup = true;
     }
 
+    /**
+     * setupFirebase() initializes the Firebase objects, including the auth and the auth state listener.
+     */
     private void setupFirebase() {
         this.auth = FirebaseAuth.getInstance();
+        this.auth.addAuthStateListener(this);
     }
 
+    @Override
+    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+        this.fragments.remove(2);
+        if (firebaseAuth.getCurrentUser() != null) {
+            this.fragments.add(2, ProfileFragment.newInstance());
+            Log.d(TAG, "onAuthStateChanged: Added ProfileFragment");
+        } else {
+            this.fragments.add(2, LoginFragment.newInstance());
+            Log.d(TAG, "onAuthStateChanged: Added LoginFragment");
+        }
+        this.pagerAdapter.notifyDataSetChanged();
+        this.viewPager.invalidate();
+    }
 
+    @Override
+    public void onPageSelected(int position) {
+        MenuItem item = bottomNavigationView.getMenu().getItem(position);
+        bottomNavigationView.setSelectedItemId(item.getItemId());
+        if (position == 1) fab.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        int translation;
+        switch (position) {
+            case 1:
+                translation = (int) (-2 * fab.getHeight() + 2 * fab.getHeight() * positionOffset);
+                if (translation != 0) fab.setTranslationY(translation);
+                break;
+            default:
+                translation = (int) (-2 * fab.getHeight() * positionOffset);
+                if (translation != 0) fab.setTranslationY(translation);
+                break;
+        }
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+        // do nothing! yay
+    }
 }

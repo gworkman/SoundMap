@@ -79,9 +79,11 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback {
 
         recordings = new ArrayList<>();
 
-        recordings.add(new DataPoint(getContext(), System.currentTimeMillis() - 12232323, 40.12473, -83.12452, 45.2));
-        recordings.add(new DataPoint(getContext(), System.currentTimeMillis() - 92043232, 40.52485, -83.73542, 70.1));
-        recordings.add(new DataPoint(getContext(), System.currentTimeMillis() - 32669324, 39.47432, -83.22146, 95.6));
+        recordings.add(new DataPoint(getContext(), System.currentTimeMillis(), 40.12473, -83.12452, 45.2));
+        recordings.add(new DataPoint(getContext(), 1495189976235L, 40.52485, -83.73542, 70.1));
+        recordings.add(new DataPoint(getContext(), 1511468462432L, 39.47432, -83.22146, 95.6));
+        recordings.add(new DataPoint(getContext(), 1495487976235L, 40.52485, -83.73542, 73.1));
+        recordings.add(new DataPoint(getContext(), 1501460462432L, 39.47432, -83.22146, 90.6));
 
         Collections.sort(recordings, new DataPoint.Compare());
 

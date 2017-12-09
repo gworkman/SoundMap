@@ -1,44 +1,45 @@
 package edu.osu.sphs.soundmap.util;
 
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.util.Log;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
-import edu.osu.sphs.soundmap.fragments.MapFragment;
-import edu.osu.sphs.soundmap.fragments.MeasureFragment;
-import edu.osu.sphs.soundmap.fragments.ProfileFragment;
+import java.util.List;
+
+import edu.osu.sphs.soundmap.fragments.LoginFragment;
 
 /**
  * Created by Gus on 11/23/2017. ViewPagerAdapter is the adapter for the viewPager object in the
- * MainActivity. Each of the fragments returned by the adapter implement NavigationFragment
+ * MainActivity. The length of the fragments list must be at least three.
  */
 
-public class ViewPagerAdapter extends FragmentPagerAdapter {
+public class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
-    private static final int FRAGMENT_COUNT = 3;
+    private static final int PAGE_COUNT = 3;
+    private List<Fragment> fragments;
 
-    public ViewPagerAdapter(FragmentManager fm) {
+    public ViewPagerAdapter(FragmentManager fm, List<Fragment> fragments) {
         super(fm);
+        this.fragments = fragments;
+    }
+
+    @Override
+    public int getItemPosition(@NonNull Object object) {
+        if (object instanceof LoginFragment) {
+            return POSITION_NONE;
+        }
+
+        return super.getItemPosition(object);
     }
 
     @Override
     public Fragment getItem(int position) {
-        switch (position) {
-            case 0:
-                return MapFragment.newInstance();
-            case 1:
-                return MeasureFragment.newInstance();
-            case 2:
-                return ProfileFragment.newInstance();
-            default:
-                Log.e("ViewPagerAdapter", "Returned a null fragment, index out of range");
-                return null;
-        }
+        return fragments.get(position);
     }
 
     @Override
     public int getCount() {
-        return FRAGMENT_COUNT;
+        return PAGE_COUNT;
     }
 }

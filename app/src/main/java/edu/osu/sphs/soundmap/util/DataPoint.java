@@ -10,6 +10,7 @@ import java.util.TimeZone;
 
 /**
  * Created by Gus on 12/8/2017. The data class that is a template for and holds the recording information.
+ * This is an immutable class.
  */
 
 public class DataPoint {
@@ -22,10 +23,6 @@ public class DataPoint {
     private double lat;
     private double lon;
     private double measurement;
-
-    public DataPoint() {
-
-    }
 
     public DataPoint(Context context, long date, double lat, double lon, double measurement) {
         this.context = context;

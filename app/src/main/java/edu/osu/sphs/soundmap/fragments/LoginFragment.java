@@ -2,10 +2,15 @@ package edu.osu.sphs.soundmap.fragments;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 import edu.osu.sphs.soundmap.R;
 
@@ -14,7 +19,9 @@ import edu.osu.sphs.soundmap.R;
  * Use the {@link LoginFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LoginFragment extends Fragment {
+public class LoginFragment extends Fragment implements View.OnClickListener {
+
+    private Button loginButton;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -37,4 +44,15 @@ public class LoginFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_login, container, false);
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        loginButton = view.findViewById(R.id.login_button);
+        loginButton.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View view) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.signInAnonymously();
+    }
 }

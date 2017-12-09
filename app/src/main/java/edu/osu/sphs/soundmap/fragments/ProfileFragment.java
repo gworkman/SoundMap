@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,9 +20,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.util.DataPoint;
+import edu.osu.sphs.soundmap.util.RecordingListAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,6 +38,9 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback {
     private static final String TAG = "ProfileFragment";
     private MapView mapView;
     private GoogleMap googleMap;
+    private RecyclerView recycler;
+    private RecordingListAdapter adapter;
+    private ArrayList<DataPoint> recordings;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -63,8 +73,22 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mapView = view.findViewById(R.id.map_background);
+        recycler = view.findViewById(R.id.recycler);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+
+        recordings = new ArrayList<>();
+
+        recordings.add(new DataPoint(getContext(), System.currentTimeMillis() - 12232323, 40.12473, -83.12452, 45.2));
+        recordings.add(new DataPoint(getContext(), System.currentTimeMillis() - 92043232, 40.52485, -83.73542, 70.1));
+        recordings.add(new DataPoint(getContext(), System.currentTimeMillis() - 32669324, 39.47432, -83.22146, 95.6));
+
+        Collections.sort(recordings, new DataPoint.Compare());
+
+        adapter = new RecordingListAdapter(recordings);
+        recycler.setAdapter(adapter);
+        recycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        recycler.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
     }
 
     @Override

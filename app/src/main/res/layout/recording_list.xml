@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="72dp">
+
+    <TextView
+        android:id="@+id/recording_list_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:text="hello"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/recording_list_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="its me"
+        android:textColor="@color/osuGreyDark"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/recording_list_slevel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/recording_list_location"
+        android:layout_marginStart="16dp"
+        android:text="i've been waiting" />
+
+</RelativeLayout>

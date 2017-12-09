@@ -5,9 +5,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.util.Log;
 
-import edu.osu.sphs.soundmap.fragments.LoginFragment;
 import edu.osu.sphs.soundmap.fragments.MapFragment;
 import edu.osu.sphs.soundmap.fragments.MeasureFragment;
+import edu.osu.sphs.soundmap.fragments.ProfileFragment;
 
 /**
  * Created by Gus on 11/23/2017. ViewPagerAdapter is the adapter for the viewPager object in the
@@ -30,7 +30,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
             case 1:
                 return MeasureFragment.newInstance();
             case 2:
-                return LoginFragment.newInstance();
+                return ProfileFragment.newInstance();
             default:
                 Log.e("ViewPagerAdapter", "Returned a null fragment, index out of range");
                 return null;

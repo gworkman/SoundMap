@@ -18,6 +18,9 @@ import java.io.IOException;
 
 public class MeasureTask extends AsyncTask<String, Double, Double> {
 
+    public static final int RESULT_OK = 0;
+    public static final int RESULT_CANCELLED = -1;
+
     private static final String TAG = "MeasureTask";
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
@@ -27,6 +30,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
     private AudioRecord recorder;
     private OnUpdateCallback callback;
     private DoubleFFT_1D transform = new DoubleFFT_1D(8192);
+    private long endTime;
 
     public MeasureTask setCallback(OnUpdateCallback callback) {
         this.callback = callback;
@@ -55,11 +59,12 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                 short[] buffer = new short[bufferSize];
                 long totalRead = 0;
                 int sampleLength = 0;
-                long endTime = System.currentTimeMillis() + 30000;
+                endTime = System.currentTimeMillis() + 30000;
                 recorder.startRecording();
 
                 Log.d(TAG, "doInBackground: recording started");
                 while (System.currentTimeMillis() < endTime) {
+                    if (isCancelled()) break;
                     sampleLength = recorder.read(buffer, 0, bufferSize);
                     //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
                     average += averageDB(doFFT(buffer));
@@ -70,6 +75,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
 
                 os.close();
                 Log.d(TAG, "doInBackground: recording ended");
+                Log.d(TAG, "doInBackground: average is " + average + ". count is " + count);
 
                 recorder.stop();
                 recorder.release();
@@ -93,6 +99,10 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
             recorder.release();
             recorder = null;
         }
+
+        if (callback != null) {
+            callback.onFinish(RESULT_OK);
+        }
     }
 
     @Override
@@ -106,10 +116,16 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
     @Override
     protected void onCancelled() {
         Log.d(TAG, "onCancelled: was called");
+        endTime = System.currentTimeMillis();
         if (recorder != null) {
             recorder.stop();
             recorder.release();
-            recorder = null;
+            Log.d(TAG, "onCancelled: supposedly ended recording");
+            // recorder = null;
+        }
+
+        if (callback != null) {
+            callback.onFinish(RESULT_CANCELLED);
         }
     }
 
@@ -156,5 +172,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
 
     public interface OnUpdateCallback {
         void onUpdate(double averageDB);
+
+        void onFinish(int result);
     }
 }

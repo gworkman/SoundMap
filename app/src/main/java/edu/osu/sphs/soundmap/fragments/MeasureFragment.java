@@ -103,6 +103,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                 fab.setImageResource(R.drawable.ic_stop);
                 isRunning = true;
                 measureTask.execute(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/temp");
+
                 Log.d(TAG, "onClick: the path is " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/temp");
 
             } else {
@@ -111,6 +112,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                 timer.setText(timerResetValue);
                 fab.setImageResource(R.drawable.ic_record);
                 isRunning = false;
+                // TODO: cancel method is not working, not sure why
                 measureTask.cancel(true);
                 measureTask = null;
             }
@@ -124,6 +126,18 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onUpdate(double dB) {
         final String text = String.format(Locale.US, "%.02f", dB) + " dB";
         this.dB.setText(text);
+    }
+
+    @Override
+    public void onFinish(int result) {
+        switch (result) {
+            case MeasureTask.RESULT_OK:
+
+                break;
+            case MeasureTask.RESULT_CANCELLED:
+
+                break;
+        }
     }
 
     @Override

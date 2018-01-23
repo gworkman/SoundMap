@@ -4,11 +4,13 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +28,8 @@ import edu.osu.sphs.soundmap.util.Values;
  * create an instance of this fragment.
  */
 public class MeasureFragment extends Fragment implements View.OnClickListener, MeasureTask.OnUpdateCallback {
+
+    private static final String TAG = "MeasureFragment";
 
     private TextView timer;
     private TextView dB;
@@ -98,7 +102,8 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                 }.start();
                 fab.setImageResource(R.drawable.ic_stop);
                 isRunning = true;
-                measureTask.execute(getContext().getFilesDir().getPath() + "/temp");
+                measureTask.execute(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/temp");
+                Log.d(TAG, "onClick: the path is " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/temp");
 
             } else {
                 chronometer.cancel();
@@ -117,7 +122,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
     @Override
     public void onUpdate(double dB) {
-        String text = String.format(Locale.US, "%.02f", dB) + " dB";
+        final String text = String.format(Locale.US, "%.02f", dB) + " dB";
         this.dB.setText(text);
     }
 

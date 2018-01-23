@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         setupBottomNav();
         setupFirebase();
         setupPager();
+        Log.d(TAG, "onCreate: api key is " + getResources().getString(R.string.google_api_key));
     }
 
     /**

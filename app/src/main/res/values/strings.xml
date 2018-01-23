@@ -3,8 +3,13 @@
     <string name="map">Map</string>
     <string name="profile">Profile</string>
     <string name="my_recordings">My Recordings</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="login">Login</string>
+    <string name="settings">Settings</string>
+    <string name="calibration_pref">calibration_preference</string>
+    <string name="save_local_pref">save_local_preference</string>
+    <string name="debug_mode_pref">debug_mode_preference</string>
+    <string name="save_local_summary">Enables offline viewing of measurements</string>
+    <string name="save_local_title">Save my recordings locally</string>
+    <string name="calibrate_summary">Calibrate your device to known sound levels</string>
+    <string name="calibrate_title">Calibration</string>
 </resources>

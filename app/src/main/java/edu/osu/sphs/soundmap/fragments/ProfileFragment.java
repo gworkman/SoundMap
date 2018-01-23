@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -104,8 +103,7 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback {
             double lon = (r.nextDouble() * .8) - 83.3;
             LatLng latLng = new LatLng(lat, lon);
             builder.include(latLng);
-            Log.d(TAG, "onMapReady: latLng " + latLng.toString());
-            googleMap.addMarker(new MarkerOptions().position(latLng).title("Marker " + i));
+            googleMap.addMarker(new MarkerOptions().position(latLng));
         }
         mapView.onResume();
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));

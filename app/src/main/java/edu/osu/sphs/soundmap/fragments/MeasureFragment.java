@@ -1,10 +1,12 @@
 package edu.osu.sphs.soundmap.fragments;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -37,6 +39,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private boolean isRunning = false;
     private CountDownTimer chronometer;
     private MeasureTask measureTask;
+    private SharedPreferences prefs;
 
     public MeasureFragment() {
         // Required empty public constructor
@@ -70,6 +73,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
     }
 
     // This is the onClick method for the fab in MainActivity
@@ -103,6 +107,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                 fab.setImageResource(R.drawable.ic_stop);
                 isRunning = true;
                 measureTask.execute(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/temp");
+
                 Log.d(TAG, "onClick: the path is " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/temp");
 
             } else {
@@ -111,6 +116,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                 timer.setText(timerResetValue);
                 fab.setImageResource(R.drawable.ic_record);
                 isRunning = false;
+                // TODO: cancel method is not working, not sure why
                 measureTask.cancel(true);
                 measureTask = null;
             }
@@ -124,6 +130,23 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onUpdate(double dB) {
         final String text = String.format(Locale.US, "%.02f", dB) + " dB";
         this.dB.setText(text);
+    }
+
+    @Override
+    public void onFinish(int result) {
+        switch (result) {
+            case MeasureTask.RESULT_OK:
+
+                break;
+            case MeasureTask.RESULT_CANCELLED:
+
+                break;
+        }
+    }
+
+    @Override
+    public double getCalibration() {
+        return Double.valueOf(prefs.getString(getResources().getString(R.string.calibration_pref), "0"));
     }
 
     @Override

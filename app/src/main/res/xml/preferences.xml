@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="0.0"
+        android:key="@string/calibration_pref"
+        android:numeric="decimal"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="@string/calibrate_summary"
+        android:title="@string/calibrate_title" />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/save_local_pref"
+        android:summary="@string/save_local_summary"
+        android:title="@string/save_local_title" />
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="@string/debug_mode_pref"
+        android:title="Debug mode" />
+
+
+</PreferenceScreen>

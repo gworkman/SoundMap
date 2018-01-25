@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     tools:context="edu.osu.sphs.soundmap.activities.MainActivity">
 
     <android.support.design.widget.BottomNavigationView
@@ -12,10 +13,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/colorAccent"
-        app:menu="@menu/bottom_navigation"
         app:itemBackground="@color/osuGrey"
         app:itemIconTint="@drawable/bottom_nav_colors"
-        app:itemTextColor="@drawable/bottom_nav_colors"/>
+        app:itemTextColor="@drawable/bottom_nav_colors"
+        app:menu="@menu/bottom_navigation" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"
@@ -24,11 +25,23 @@
         android:layout_above="@id/bottomNavigationView"/>
 
     <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_upload"
+        android:layout_width="64dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="-82dp"
+        android:layout_marginEnd="28dp"
+        android:src="@drawable/ic_upload"
+        android:visibility="gone"
+        app:backgroundTint="@color/osuGreyLight" />
+
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="96dp"
         android:layout_height="match_parent"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:layout_marginBottom="-98dp"
         android:src="@drawable/ic_record"
         app:backgroundTint="@color/osuScarlet"/>

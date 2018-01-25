@@ -59,6 +59,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                 short[] buffer = new short[bufferSize];
                 long totalRead = 0;
                 int sampleLength = 0;
+                double avg;
                 endTime = System.currentTimeMillis() + 30000;
                 recorder.startRecording();
 
@@ -67,9 +68,12 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                     if (isCancelled()) break;
                     sampleLength = recorder.read(buffer, 0, bufferSize);
                     //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-                    average += averageDB(doFFT(buffer));
-                    count++;
-                    publishProgress(average / count);
+                    avg = averageDB(doFFT(buffer));
+                    if (avg != Double.NEGATIVE_INFINITY) {
+                        average += avg;
+                        count++;
+                        publishProgress(average / count);
+                    }
                     totalRead += sampleLength;
                 }
 

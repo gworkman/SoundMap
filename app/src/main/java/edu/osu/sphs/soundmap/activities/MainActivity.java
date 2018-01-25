@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     private ViewPager viewPager;
     private ViewPagerAdapter pagerAdapter;
     private FloatingActionButton fab;
+    private FloatingActionButton upload;
     private boolean fabIsSetup = false;
     private FirebaseAuth auth;
     private List<Fragment> fragments = new ArrayList<>();
@@ -47,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         setupBottomNav();
         setupFirebase();
         setupPager();
-        Log.d(TAG, "onCreate: api key is " + getResources().getString(R.string.google_api_key));
     }
 
     /**
@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         viewPager = findViewById(R.id.viewPager);
         fab = findViewById(R.id.fab);
+        upload = findViewById(R.id.fab_upload);
     }
 
     /**
@@ -69,7 +70,10 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                 switch (item.getItemId()) {
                     case R.id.menu_map:
                         // required for a smooth transition with the fab
-                        if (bottomNavigationView.getSelectedItemId() != R.id.menu_measure) fab.setVisibility(View.INVISIBLE);
+                        if (bottomNavigationView.getSelectedItemId() != R.id.menu_measure) {
+                            fab.setVisibility(View.INVISIBLE);
+                            upload.setVisibility(View.INVISIBLE);
+                        }
                         // scroll to the map fragment
                         viewPager.setCurrentItem(0, true);
                         break;
@@ -80,7 +84,10 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                         break;
                     case R.id.menu_profile:
                         // required for a smooth transition with the fab
-                        if (bottomNavigationView.getSelectedItemId() != R.id.menu_measure) fab.setVisibility(View.INVISIBLE);
+                        if (bottomNavigationView.getSelectedItemId() != R.id.menu_measure) {
+                            fab.setVisibility(View.INVISIBLE);
+                            upload.setVisibility(View.INVISIBLE);
+                        }
                         // scroll to the profile fragment
                         viewPager.setCurrentItem(2,true);
                         break;
@@ -116,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     private void setupFab() {
         MeasureFragment measureFragment = (MeasureFragment) fragments.get(1);
         fab.setOnClickListener(measureFragment);
+        upload.setOnClickListener(measureFragment);
+        upload.callOnClick();
         fabIsSetup = true;
     }
 
@@ -145,7 +154,10 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     public void onPageSelected(int position) {
         MenuItem item = bottomNavigationView.getMenu().getItem(position);
         bottomNavigationView.setSelectedItemId(item.getItemId());
-        if (position == 1) fab.setVisibility(View.VISIBLE);
+        if (position == 1) {
+            fab.setVisibility(View.VISIBLE);
+            //upload.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -154,11 +166,17 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         switch (position) {
             case 1:
                 translation = (int) (-2 * fab.getHeight() + 2 * fab.getHeight() * positionOffset);
-                if (translation != 0) fab.setTranslationY(translation);
+                if (translation != 0) {
+                    fab.setTranslationY(translation);
+                    upload.setTranslationY(translation);
+                }
                 break;
             default:
                 translation = (int) (-2 * fab.getHeight() * positionOffset);
-                if (translation != 0) fab.setTranslationY(translation);
+                if (translation != 0) {
+                    fab.setTranslationY(translation);
+                    upload.setTranslationY(translation);
+                }
                 break;
         }
     }

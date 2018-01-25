@@ -3,6 +3,8 @@ package edu.osu.sphs.soundmap.util;
 import android.content.Context;
 import android.text.format.DateFormat;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -13,7 +15,7 @@ import java.util.TimeZone;
  * This is an immutable class.
  */
 
-public class DataPoint {
+public final class DataPoint {
 
     private static final int DAY_MILLIS = 86400000;
     private static final Calendar today = getToday();
@@ -29,6 +31,26 @@ public class DataPoint {
         this.date = date;
         this.lat = lat;
         this.lon = lon;
+        this.measurement = measurement;
+    }
+
+    public DataPoint(Context context, long date, LatLng latLng, double measurement) {
+        this.context = context;
+        this.date = date;
+        this.lat = latLng.latitude;
+        this.lon = latLng.longitude;
+        this.measurement = measurement;
+    }
+
+    public DataPoint(double lat, double lon, double measurement) {
+        this.lat = lat;
+        this.lon = lon;
+        this.measurement = measurement;
+    }
+
+    public DataPoint(LatLng latLng, double measurement) {
+        this.lat = latLng.latitude;
+        this.lon = latLng.longitude;
         this.measurement = measurement;
     }
 
@@ -78,6 +100,10 @@ public class DataPoint {
 
     public double getMeasurement() {
         return measurement;
+    }
+
+    public LatLng getLatLng() {
+        return new LatLng(this.lat, this.lon);
     }
 
     public static class Compare implements Comparator<DataPoint> {

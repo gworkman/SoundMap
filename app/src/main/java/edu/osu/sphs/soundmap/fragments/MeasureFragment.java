@@ -2,6 +2,7 @@ package edu.osu.sphs.soundmap.fragments;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
@@ -16,9 +17,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.Locale;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.util.DataPoint;
 import edu.osu.sphs.soundmap.util.MeasureTask;
 import edu.osu.sphs.soundmap.util.Values;
 
@@ -27,16 +36,21 @@ import edu.osu.sphs.soundmap.util.Values;
  * Use the {@link MeasureFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MeasureFragment extends Fragment implements View.OnClickListener, MeasureTask.OnUpdateCallback {
+public class MeasureFragment extends Fragment implements View.OnClickListener, MeasureTask.OnUpdateCallback, OnSuccessListener<Location> {
 
     private static final String TAG = "MeasureFragment";
 
     private TextView timer;
     private TextView dB;
     private FloatingActionButton fab;
+    private FloatingActionButton upload;
     private boolean isRunning = false;
+    private boolean uploadInitialized = false;
+    private double dBvalue;
     private CountDownTimer chronometer;
     private MeasureTask measureTask;
+    private DatabaseReference data;
+    private FusedLocationProviderClient locationProviderClient;
 
     public MeasureFragment() {
         // Required empty public constructor
@@ -70,60 +84,77 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
+        data = FirebaseDatabase.getInstance().getReference("android-test");
+        locationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
     }
 
     // This is the onClick method for the fab in MainActivity
     @Override
     public void onClick(View v) {
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+        switch (v.getId()) {
+            case R.id.fab:
+                if (ActivityCompat.checkSelfPermission(v.getContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
 
-            if (measureTask == null) {
-                measureTask = new MeasureTask();
-                measureTask.setCallback(this);
-            }
-
-            if (!isRunning) {
-                fab = (FloatingActionButton) v;
-                chronometer = new CountDownTimer(30000, 100) {
-                    @Override
-                    public void onTick(long millisUntilFinished) {
-                        int seconds = (int) (millisUntilFinished / 1000);
-                        int decimal = (int) (millisUntilFinished % 1000 / 100.0);
-                        String timerValue = seconds + "." + decimal + " seconds";
-                        timer.setText(timerValue);
+                    if (measureTask == null) {
+                        measureTask = new MeasureTask();
+                        measureTask.setCallback(this);
                     }
 
-                    @Override
-                    public void onFinish() {
+                    if (!isRunning) {
+                        fab = (FloatingActionButton) v;
+                        chronometer = new CountDownTimer(30000, 100) {
+                            @Override
+                            public void onTick(long millisUntilFinished) {
+                                int seconds = (int) (millisUntilFinished / 1000);
+                                int decimal = (int) (millisUntilFinished % 1000 / 100.0);
+                                String timerValue = seconds + "." + decimal + " seconds";
+                                timer.setText(timerValue);
+                            }
+
+                            @Override
+                            public void onFinish() {
+                                fab.setImageResource(R.drawable.ic_record);
+                                isRunning = false;
+                                measureTask = null;
+                            }
+                        }.start();
+                        fab.setImageResource(R.drawable.ic_stop);
+                        upload.setVisibility(View.GONE);
+                        isRunning = true;
+                        measureTask.execute(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/temp");
+
+                        Log.d(TAG, "onClick: the path is " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/temp");
+
+                    } else {
+                        chronometer.cancel();
+                        String timerResetValue = "30.0 seconds";
+                        timer.setText(timerResetValue);
                         fab.setImageResource(R.drawable.ic_record);
+                        upload.setVisibility(View.GONE);
                         isRunning = false;
+                        measureTask.cancel(true);
                         measureTask = null;
                     }
-                }.start();
-                fab.setImageResource(R.drawable.ic_stop);
-                isRunning = true;
-                measureTask.execute(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/temp");
 
-                Log.d(TAG, "onClick: the path is " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/temp");
+                } else {
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, Values.AUDIO_REQUEST_CODE);
+                }
 
-            } else {
-                chronometer.cancel();
-                String timerResetValue = "30.0 seconds";
-                timer.setText(timerResetValue);
-                fab.setImageResource(R.drawable.ic_record);
-                isRunning = false;
-                // TODO: cancel method is not working, not sure why
-                measureTask.cancel(true);
-                measureTask = null;
-            }
+                break;
 
-        } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, Values.AUDIO_REQUEST_CODE);
+            case R.id.fab_upload:
+                if (!uploadInitialized) {
+                    upload = (FloatingActionButton) v;
+                    uploadInitialized = true;
+                } else {
+                    locationProviderClient.getLastLocation().addOnSuccessListener(this);
+                }
         }
     }
 
     @Override
     public void onUpdate(double dB) {
+        this.dBvalue = dB;
         final String text = String.format(Locale.US, "%.02f", dB) + " dB";
         this.dB.setText(text);
     }
@@ -132,10 +163,10 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onFinish(int result) {
         switch (result) {
             case MeasureTask.RESULT_OK:
-
+                upload.setVisibility(View.VISIBLE);
                 break;
             case MeasureTask.RESULT_CANCELLED:
-
+                upload.setVisibility(View.GONE);
                 break;
         }
     }
@@ -148,5 +179,17 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                     fab.callOnClick();
                 }
         }
+    }
+
+    @Override
+    public void onSuccess(Location location) {
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        upload(latLng, this.dBvalue);
+    }
+
+    public void upload(LatLng latLng, double measurement) {
+        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), latLng, measurement);
+        data.push().setValue(toUpload);
+        upload.setVisibility(View.GONE);
     }
 }

@@ -176,6 +176,11 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     }
 
     @Override
+    public double getCalibration() {
+        return Double.valueOf(prefs.getString(getResources().getString(R.string.calibration_pref), "0"));
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case Values.AUDIO_REQUEST_CODE:

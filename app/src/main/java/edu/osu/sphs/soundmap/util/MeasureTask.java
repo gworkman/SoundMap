@@ -46,6 +46,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
     @Override
     protected Double doInBackground(String... files) {
         double average = 0;
+        double value, overallAverage;
         int count = 0;
 
         if (files.length > 0) {
@@ -59,20 +60,19 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                 recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
 
                 short[] buffer = new short[bufferSize];
-                long totalRead = 0;
-                int sampleLength = 0;
-                endTime = System.currentTimeMillis() + 30000;
+                endTime = System.currentTimeMillis() + 30000; // 30 seconds
                 recorder.startRecording();
 
                 Log.d(TAG, "doInBackground: recording started");
                 while (System.currentTimeMillis() < endTime) {
                     if (isCancelled()) break;
-                    sampleLength = recorder.read(buffer, 0, bufferSize);
+                    recorder.read(buffer, 0, bufferSize);
                     //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-                    average += averageDB(doFFT(buffer));
+                    value = doFFT(buffer);
+                    if (value != Double.NEGATIVE_INFINITY) average += value;
                     count++;
-                    publishProgress(average / count);
-                    totalRead += sampleLength;
+                    overallAverage = 20 * Math.log10(average / count) + calibration;
+                    publishProgress(overallAverage);
                 }
 
                 os.close();
@@ -111,7 +111,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
     protected void onProgressUpdate(Double... values) {
         //Log.d(TAG, "onProgressUpdate: values is " + Arrays.toString(values));
         if (callback != null) {
-            callback.onUpdate(69 + values[0]);
+            callback.onUpdate(values[0]);
         }
     }
 
@@ -136,46 +136,35 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
      * in a Fourier Transform.
      *
      * @param rawData the array of short PCM values. Can contain zeroes.
-     * @return an array of amplitudes of the different bins from a Fourier Transform.
+     * @return the average amplitude for the dataset
      */
-    private double[] doFFT(short[] rawData) {
+    private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
+        double avg = 0.0;
 
         // get a half-filled array of double values for the fft calculation
         for (int i = 0; i < rawData.length; i++) {
-            fft[i] = rawData[i] / (Short.MAX_VALUE * 1.0);
+            fft[i] = rawData[i] / ((double) Short.MAX_VALUE);
             //if (i < 2) Log.d(TAG, "doFFT: fft position " + i+ " is " + fft[i]);
         }
 
         // fft
         transform.realForwardFull(fft);
-
-        // calculate the amplitudes
-        double[] amplitudes = new double[rawData.length];
-        for (int i = 0; i < rawData.length; i++) {
-            //                                      reals                     imaginary
-            amplitudes[i] = Math.sqrt(Math.pow(fft[2 * i], 2) + Math.pow(fft[2 * i + 1], 2));
+        Log.d(TAG, "doFFT: length of the array is " + Values.A_WEIGHT_COEFFICIENTS.length);
+        Log.d(TAG, "doFFT: length of fft is " + fft.length);
+        Log.d(TAG, "doFFT: length of rawData is " + rawData.length);
+        // calculate the sum of amplitudes
+        for (int i = 0; i < rawData.length; i += 2) {
+            //                           reals              imaginary
+            avg += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2)) * Values.A_WEIGHT_COEFFICIENTS[i / 2];
         }
 
-        return amplitudes;
-    }
-
-    /**
-     * Computes the average sound pressure measurement level for an array of SPL amplitudes (from FFT).
-     *
-     * @param amplitudes the double array to average.
-     * @return a double value that represents the average of the time period.
-     */
-    private double averageDB(double[] amplitudes) {
-        double avg = 0.0;
-        for (double amp : amplitudes) avg += 20 * Math.log10(amp) + this.calibration;
-        return avg / amplitudes.length;
+        return avg / rawData.length;
     }
 
     public interface OnUpdateCallback {
         void onUpdate(double averageDB);
         void onFinish(int result);
-
         double getCalibration();
     }
 }

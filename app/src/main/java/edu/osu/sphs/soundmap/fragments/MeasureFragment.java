@@ -1,11 +1,13 @@
 package edu.osu.sphs.soundmap.fragments;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -51,6 +53,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private MeasureTask measureTask;
     private DatabaseReference data;
     private FusedLocationProviderClient locationProviderClient;
+    private SharedPreferences prefs;
 
     public MeasureFragment() {
         // Required empty public constructor
@@ -86,6 +89,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         dB = view.findViewById(R.id.dB);
         data = FirebaseDatabase.getInstance().getReference("android-test");
         locationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
     }
 
     // This is the onClick method for the fab in MainActivity

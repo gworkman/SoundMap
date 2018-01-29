@@ -39,10 +39,6 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
         return this;
     }
 
-    public void removeCallback() {
-        this.callback = null;
-    }
-
     @Override
     protected Double doInBackground(String... files) {
         double average = 0;
@@ -56,7 +52,6 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                 os = new FileOutputStream(files[0]);
 
                 int bufferSize = 8192; // 2 ^ 13, necessary for the fft
-                Log.d(TAG, "doInBackground: bufferSize is " + bufferSize);
                 recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
 
                 short[] buffer = new short[bufferSize];
@@ -77,7 +72,6 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
 
                 os.close();
                 Log.d(TAG, "doInBackground: recording ended");
-                Log.d(TAG, "doInBackground: average is " + average + ". count is " + count);
 
                 recorder.stop();
                 recorder.release();
@@ -117,12 +111,10 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
 
     @Override
     protected void onCancelled() {
-        Log.d(TAG, "onCancelled: was called");
         endTime = System.currentTimeMillis();
         if (recorder != null) {
             recorder.stop();
             recorder.release();
-            Log.d(TAG, "onCancelled: supposedly ended recording");
             // recorder = null;
         }
 
@@ -150,9 +142,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
 
         // fft
         transform.realForwardFull(fft);
-        Log.d(TAG, "doFFT: length of the array is " + Values.A_WEIGHT_COEFFICIENTS.length);
-        Log.d(TAG, "doFFT: length of fft is " + fft.length);
-        Log.d(TAG, "doFFT: length of rawData is " + rawData.length);
+
         // calculate the sum of amplitudes
         for (int i = 0; i < rawData.length; i += 2) {
             //                           reals              imaginary

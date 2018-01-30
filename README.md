@@ -5,8 +5,8 @@ An application created by The Ohio State University Department of Speech and Hea
 Requires Android Lollipop (5.0) and above. Optimized for the latest version of Android, 8.1. Uses the Android AudioRecord API to record the dB(A) measurement. 
 
 # Permissions
-Record audio: to take measurements with the microphone
-Location: to record the location of the measurement
+Record audio: to take measurements with the microphone.
+Location: to record the location of the measurement.
 Storage: for debug purposes. Will remove soon.
 
 # Dependencies

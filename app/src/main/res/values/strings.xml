@@ -12,4 +12,6 @@
     <string name="save_local_title">Save my recordings locally</string>
     <string name="calibrate_summary">Calibrate your device to known sound levels</string>
     <string name="calibrate_title">Calibration</string>
+    <string name="end_time">0.0 seconds</string>
+    <string name="start_time">30.0 seconds</string>
 </resources>

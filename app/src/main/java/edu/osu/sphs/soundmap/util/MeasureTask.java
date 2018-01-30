@@ -25,7 +25,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
-    private static final int SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION;
+    private static final int SOURCE = MediaRecorder.AudioSource.MIC;
 
     private AudioRecord recorder;
     private OnUpdateCallback callback;
@@ -41,8 +41,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
 
     @Override
     protected Double doInBackground(String... files) {
-        double average = 0;
-        double value, overallAverage;
+        double value = 0, overallAverage = 0, averageSumTerm = 0;
         int count = 0;
 
         if (files.length > 0) {
@@ -64,9 +63,9 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                     recorder.read(buffer, 0, bufferSize);
                     //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
                     value = doFFT(buffer);
-                    if (value != Double.NEGATIVE_INFINITY) average += value;
+                    if (value != Double.NEGATIVE_INFINITY) averageSumTerm += value;
                     count++;
-                    overallAverage = 20 * Math.log10(average / count) + calibration;
+                    overallAverage = 20 * Math.log10(averageSumTerm / count) + calibration;
                     publishProgress(overallAverage);
                 }
 
@@ -85,7 +84,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
             new Error("Must provide a file output path").printStackTrace();
         }
 
-        return average;
+        return overallAverage;
     }
 
     @Override
@@ -148,7 +147,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
         // calculate the sum of amplitudes
         for (int i = 0; i < rawData.length; i += 2) {
             //                           reals              imaginary
-            avg += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2)) * Values.A_WEIGHT_COEFFICIENTS[i / 2];
+            avg += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2)) /* Values.A_WEIGHT_COEFFICIENTS[i / 2]*/;
         }
 
         return avg / rawData.length;

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
@@ -131,8 +132,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
                     } else {
                         chronometer.cancel();
-                        String timerResetValue = "30.0 seconds";
-                        timer.setText(timerResetValue);
+                        timer.setText(R.string.start_time);
                         fab.setImageResource(R.drawable.ic_record);
                         upload.setVisibility(View.GONE);
                         isRunning = false;
@@ -168,6 +168,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         switch (result) {
             case MeasureTask.RESULT_OK:
                 upload.setVisibility(View.VISIBLE);
+                this.timer.setText(R.string.end_time);
                 break;
             case MeasureTask.RESULT_CANCELLED:
                 upload.setVisibility(View.GONE);
@@ -193,12 +194,20 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     @Override
     public void onSuccess(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        upload(latLng, this.dBvalue);
+        upload(latLng.latitude, latLng.longitude, this.dBvalue);
     }
 
-    public void upload(LatLng latLng, double measurement) {
-        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), latLng, measurement);
-        data.push().setValue(toUpload);
+    public void upload(double latitude, double longitude, double measurement) {
+        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), latitude, longitude, measurement);
+
+        // create new node in Firebase
+        DatabaseReference newNode = data.push();
+        newNode.child("Decibels").setValue(toUpload.getDecibels());
+        newNode.child("Lat").setValue(toUpload.getLat());
+        newNode.child("Long").setValue(toUpload.getLon());
+        newNode.child("Time").setValue(toUpload.getDate());
+        newNode.child("Device").setValue(Build.MANUFACTURER + " " + Build.MODEL);
+
         upload.setVisibility(View.GONE);
     }
 }

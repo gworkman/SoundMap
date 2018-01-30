@@ -24,34 +24,22 @@ public final class DataPoint {
     private long date;
     private double lat;
     private double lon;
-    private double measurement;
+    private double decibels;
 
-    public DataPoint(Context context, long date, double lat, double lon, double measurement) {
+    public DataPoint(Context context, long date, double lat, double lon, double decibels) {
         this.context = context;
         this.date = date;
         this.lat = lat;
         this.lon = lon;
-        this.measurement = measurement;
+        this.decibels = decibels;
     }
 
-    public DataPoint(Context context, long date, LatLng latLng, double measurement) {
+    public DataPoint(Context context, long date, LatLng latLng, double decibels) {
         this.context = context;
         this.date = date;
         this.lat = latLng.latitude;
         this.lon = latLng.longitude;
-        this.measurement = measurement;
-    }
-
-    public DataPoint(double lat, double lon, double measurement) {
-        this.lat = lat;
-        this.lon = lon;
-        this.measurement = measurement;
-    }
-
-    public DataPoint(LatLng latLng, double measurement) {
-        this.lat = latLng.latitude;
-        this.lon = latLng.longitude;
-        this.measurement = measurement;
+        this.decibels = decibels;
     }
 
     private static Calendar getToday() {
@@ -98,12 +86,8 @@ public final class DataPoint {
         return lon;
     }
 
-    public double getMeasurement() {
-        return measurement;
-    }
-
-    public LatLng getLatLng() {
-        return new LatLng(this.lat, this.lon);
+    public double getDecibels() {
+        return decibels;
     }
 
     public static class Compare implements Comparator<DataPoint> {

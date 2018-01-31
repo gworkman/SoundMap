@@ -4,7 +4,6 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
@@ -55,15 +54,16 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                 recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
 
                 short[] buffer = new short[bufferSize];
+                double[] avgArray = new double[bufferSize];
+
                 endTime = System.currentTimeMillis() + 30000; // 30 seconds
                 recorder.startRecording();
 
-                Log.d(TAG, "doInBackground: recording started");
                 while (System.currentTimeMillis() < endTime) {
                     if (isCancelled()) break;
                     recorder.read(buffer, 0, bufferSize);
                     //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-                    value = doFFT(buffer);
+                    value = doFFT(buffer, avgArray);
                     if (value != Double.NEGATIVE_INFINITY) average += value;
                     count++;
                     overallAverage = 20 * Math.log10(average / count) + calibration;
@@ -71,7 +71,6 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                 }
 
                 os.close();
-                Log.d(TAG, "doInBackground: recording ended");
 
                 recorder.stop();
                 recorder.release();
@@ -103,7 +102,6 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
 
     @Override
     protected void onProgressUpdate(Double... values) {
-        //Log.d(TAG, "onProgressUpdate: values is " + Arrays.toString(values));
         if (callback != null) {
             callback.onUpdate(values[0]);
         }
@@ -111,12 +109,10 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
 
     @Override
     protected void onCancelled() {
-        Log.d(TAG, "onCancelled: was called");
         endTime = System.currentTimeMillis();
         if (recorder != null) {
             recorder.stop();
             recorder.release();
-            Log.d(TAG, "onCancelled: supposedly ended recording");
             // recorder = null;
         }
 
@@ -132,23 +128,23 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
      * @param rawData the array of short PCM values. Can contain zeroes.
      * @return the average amplitude for the dataset
      */
-    private double doFFT(short[] rawData) {
+    private double doFFT(short[] rawData, double[] avgArray) {
         double[] fft = new double[2 * rawData.length];
-        double avg = 0.0;
+        double avg = 0.0, amp = 0.0;
 
         // get a half-filled array of double values for the fft calculation
         for (int i = 0; i < rawData.length; i++) {
             fft[i] = rawData[i] / ((double) Short.MAX_VALUE);
-            //if (i < 2) Log.d(TAG, "doFFT: fft position " + i+ " is " + fft[i]);
         }
 
         // fft
         transform.realForwardFull(fft);
 
         // calculate the sum of amplitudes
-        for (int i = 0; i < rawData.length; i += 2) {
-            //                           reals              imaginary
-            avg += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2)) * Values.A_WEIGHT_COEFFICIENTS[i / 2];
+        for (int i = 0; i < fft.length; i += 2) {
+            //                          reals               imaginary
+            amp += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2));
+            avg += amp * Values.A_WEIGHT_COEFFICIENTS[i / 2];
         }
 
         return avg / rawData.length;

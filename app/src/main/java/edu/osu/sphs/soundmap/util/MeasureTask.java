@@ -66,7 +66,7 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
                     value = doFFT(buffer, avgArray);
                     if (value != Double.NEGATIVE_INFINITY) average += value;
                     count++;
-                    overallAverage = 20 * Math.log10(average / count) + calibration;
+                    overallAverage = 20 * Math.log10(average / count) + 8.25 + calibration;
                     publishProgress(overallAverage);
                 }
 

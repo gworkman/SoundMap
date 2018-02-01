@@ -1,6 +1,7 @@
 package edu.osu.sphs.soundmap.fragments;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -54,6 +55,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private DatabaseReference data;
     private FusedLocationProviderClient locationProviderClient;
     private SharedPreferences prefs;
+    private Activity activity;
 
     public MeasureFragment() {
         // Required empty public constructor
@@ -85,10 +87,11 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        if (activity == null) activity = getActivity();
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
         data = FirebaseDatabase.getInstance().getReference("android-test");
-        locationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
     }
 
@@ -141,7 +144,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                     }
 
                 } else {
-                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, Values.AUDIO_REQUEST_CODE);
+                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, Values.AUDIO_REQUEST_CODE);
                 }
 
                 break;
@@ -193,6 +196,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     @Override
     public void onSuccess(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        prefs.edit().putFloat("last_lat", (float) location.getLatitude()).putFloat("last_long", (float) location.getLongitude()).apply();
         upload(latLng, this.dBvalue);
     }
 

@@ -92,8 +92,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, Values.LOCATION_REQUEST_CODE);
         }
-        data = FirebaseDatabase.getInstance().getReference("iOS");
-        data.addListenerForSingleValueEvent(this);
+        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+        data.addValueEventListener(this);
         mapView.onResume();
     }
 

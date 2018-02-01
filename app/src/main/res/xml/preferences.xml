@@ -21,5 +21,13 @@
         android:key="@string/debug_mode_pref"
         android:title="Debug mode" />
 
+    <ListPreference
+        android:defaultValue="iOS"
+        android:entries="@array/databaseSelectorArray"
+        android:entryValues="@array/databaseSelectorValues"
+        android:key="@string/data_source_pref"
+        android:summary="@string/choose_source_summary"
+        android:title="@string/choose_source_title" />
+
 
 </PreferenceScreen>

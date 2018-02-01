@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="databaseSelectorArray">
+        <item>Testing Database</item>
+        <item>Production Database</item>
+    </string-array>
+
+    <string-array name="databaseSelectorValues">
+        <item>android-test</item>
+        <item>iOS</item>
+    </string-array>
+</resources>

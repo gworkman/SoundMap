@@ -7,15 +7,12 @@ import android.os.AsyncTask;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 
 /**
  * Created by Gus on 12/3/2017. A tool to get the dB value in the background asynchronously
  */
 
-public class MeasureTask extends AsyncTask<String, Double, Double> {
+public class MeasureTask extends AsyncTask<Void, Double, Double> {
 
     public static final int RESULT_OK = 0;
     public static final int RESULT_CANCELLED = -1;
@@ -39,50 +36,39 @@ public class MeasureTask extends AsyncTask<String, Double, Double> {
     }
 
     @Override
-    protected Double doInBackground(String... files) {
+    protected Double doInBackground(Void... voids) {
         double average = 0;
         double value, overallAverage;
         int count = 0;
 
-        if (files.length > 0) {
+        //FileOutputStream os;
+        // File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/temp";
+        //os = new FileOutputStream(file);
 
-            FileOutputStream os;
-            try {
-                os = new FileOutputStream(files[0]);
+        int bufferSize = 8192; // 2 ^ 13, necessary for the fft
+        recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
 
-                int bufferSize = 8192; // 2 ^ 13, necessary for the fft
-                recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
+        short[] buffer = new short[bufferSize];
+        double[] avgArray = new double[bufferSize];
 
-                short[] buffer = new short[bufferSize];
-                double[] avgArray = new double[bufferSize];
-
-                endTime = System.currentTimeMillis() + 30000; // 30 seconds
-                recorder.startRecording();
-
-                while (System.currentTimeMillis() < endTime) {
-                    if (isCancelled()) break;
-                    recorder.read(buffer, 0, bufferSize);
-                    //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-                    value = doFFT(buffer, avgArray);
-                    if (value != Double.NEGATIVE_INFINITY) average += value;
-                    count++;
-                    overallAverage = 20 * Math.log10(average / count) + 8.25 + calibration;
-                    publishProgress(overallAverage);
-                }
-
-                os.close();
-
-                recorder.stop();
-                recorder.release();
-                recorder = null;
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        } else {
-            new Error("Must provide a file output path").printStackTrace();
+        endTime = System.currentTimeMillis() + 30000; // 30 seconds
+        recorder.startRecording();
+        while (System.currentTimeMillis() < endTime) {
+            if (isCancelled()) break;
+            recorder.read(buffer, 0, bufferSize);
+            //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
+            value = doFFT(buffer, avgArray);
+            if (value != Double.NEGATIVE_INFINITY) average += value;
+            count++;
+            overallAverage = 20 * Math.log10(average / count) + 8.25 + calibration;
+            publishProgress(overallAverage);
         }
+
+        //os.close();
+
+        recorder.stop();
+        recorder.release();
+        recorder = null;
 
         return average;
     }

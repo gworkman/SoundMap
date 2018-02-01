@@ -7,14 +7,12 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,9 +88,9 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         if (activity == null) activity = getActivity();
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
-        data = FirebaseDatabase.getInstance().getReference("android-test");
-        locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+        locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
     }
 
     // This is the onClick method for the fab in MainActivity
@@ -128,9 +126,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                         fab.setImageResource(R.drawable.ic_stop);
                         upload.setVisibility(View.GONE);
                         isRunning = true;
-                        measureTask.execute(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/temp");
-
-                        Log.d(TAG, "onClick: the path is " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/temp");
+                        measureTask.execute();
 
                     } else {
                         chronometer.cancel();

@@ -3,6 +3,7 @@
     <string name="map">Map</string>
     <string name="profile">Profile</string>
     <string name="my_recordings">My Recordings</string>
+    <string name="end_time">0.0 seconds</string>
     <string name="login">Login</string>
     <string name="settings">Settings</string>
     <string name="calibration_pref">calibration_preference</string>

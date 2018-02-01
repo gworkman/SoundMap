@@ -34,9 +34,9 @@ public class RecordingListAdapter extends RecyclerView.Adapter<RecordingListAdap
         DataPoint data = recordings.get(position);
         String timestamp = data.getTimeString();
         holder.date.setText(timestamp);
-        String latlong = data.getLat() + ", " + data.getLon();
-        holder.latlong.setText(latlong);
-        holder.slevel.setText(String.valueOf(data.getMeasurement()));
+        String coords = data.getLat() + ", " + data.getLon();
+        holder.latlong.setText(coords);
+        holder.slevel.setText(String.valueOf(data.getDecibels()));
     }
 
     @Override

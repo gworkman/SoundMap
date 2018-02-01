@@ -132,18 +132,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
     public void onDataChange(DataSnapshot dataSnapshot) {
         if (googleMap != null) {
             for (DataSnapshot point : dataSnapshot.getChildren()) {
-                double decibels = Double.valueOf(point.child("Decibels").getValue().toString());
-                double lat = Double.valueOf(point.child("Lat").getValue().toString());
-                double lon = Double.valueOf(point.child("Long").getValue().toString());
-                if (decibels < 70) {
-                    googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                } else if (decibels < 90) {
-                    googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-                } else {
-                    googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+
+                // TODO: THIS IS SUPER HACKY, FIX IT
+                try {
+                    double decibels = Double.valueOf(point.child("Decibels").getValue().toString());
+                    double lat = Double.valueOf(point.child("Lat").getValue().toString());
+                    double lon = Double.valueOf(point.child("Long").getValue().toString());
+                    if (decibels < 70) {
+                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    } else if (decibels < 90) {
+                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                    } else {
+                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                    }
+                } catch (NullPointerException e) {
+                    // don't do anything
                 }
             }
         }

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
@@ -20,7 +21,6 @@ import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -167,6 +167,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         switch (result) {
             case MeasureTask.RESULT_OK:
                 upload.setVisibility(View.VISIBLE);
+                this.timer.setText(R.string.end_time);
                 break;
             case MeasureTask.RESULT_CANCELLED:
                 upload.setVisibility(View.GONE);
@@ -191,14 +192,17 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
     @Override
     public void onSuccess(Location location) {
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        prefs.edit().putFloat("last_lat", (float) location.getLatitude()).putFloat("last_long", (float) location.getLongitude()).apply();
-        upload(latLng, this.dBvalue);
-    }
+        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), location.getLatitude(),
+                location.getLongitude(), this.dBvalue);
 
-    public void upload(LatLng latLng, double measurement) {
-        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), latLng, measurement);
-        data.push().setValue(toUpload);
+        // create new node in Firebase
+        DatabaseReference newNode = data.push();
+        newNode.child("Decibels").setValue(toUpload.getDecibels());
+        newNode.child("Lat").setValue(toUpload.getLat());
+        newNode.child("Long").setValue(toUpload.getLon());
+        newNode.child("Time").setValue(toUpload.getDate());
+        newNode.child("Device").setValue(Build.MANUFACTURER + " " + Build.MODEL);
+
         upload.setVisibility(View.GONE);
     }
 }

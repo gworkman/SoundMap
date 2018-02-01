@@ -3,8 +3,6 @@ package edu.osu.sphs.soundmap.util;
 import android.content.Context;
 import android.text.format.DateFormat;
 
-import com.google.android.gms.maps.model.LatLng;
-
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -34,23 +32,9 @@ public final class DataPoint {
         this.measurement = measurement;
     }
 
-    public DataPoint(Context context, long date, LatLng latLng, double measurement) {
-        this.context = context;
-        this.date = date;
-        this.lat = latLng.latitude;
-        this.lon = latLng.longitude;
-        this.measurement = measurement;
-    }
-
     public DataPoint(double lat, double lon, double measurement) {
         this.lat = lat;
         this.lon = lon;
-        this.measurement = measurement;
-    }
-
-    public DataPoint(LatLng latLng, double measurement) {
-        this.lat = latLng.latitude;
-        this.lon = latLng.longitude;
         this.measurement = measurement;
     }
 
@@ -98,13 +82,10 @@ public final class DataPoint {
         return lon;
     }
 
-    public double getMeasurement() {
+    public double getDecibels() {
         return measurement;
     }
 
-    public LatLng getLatLng() {
-        return new LatLng(this.lat, this.lon);
-    }
 
     public static class Compare implements Comparator<DataPoint> {
         @Override

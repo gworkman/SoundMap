@@ -32,12 +32,6 @@ public final class DataPoint {
         this.measurement = measurement;
     }
 
-    public DataPoint(double lat, double lon, double measurement) {
-        this.lat = lat;
-        this.lon = lon;
-        this.measurement = measurement;
-    }
-
     private static Calendar getToday() {
         Calendar today = Calendar.getInstance(TimeZone.getDefault());
         today.set(Calendar.HOUR, 0);

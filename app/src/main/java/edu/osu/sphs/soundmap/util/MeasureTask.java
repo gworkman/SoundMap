@@ -29,16 +29,14 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
     private long endTime;
     private double calibration = 0;
 
-    public MeasureTask setCallback(OnUpdateCallback callback) {
+    public void setCallback(OnUpdateCallback callback) {
         this.callback = callback;
         this.calibration = this.callback.getCalibration();
-        return this;
     }
 
     @Override
     protected Double doInBackground(Void... voids) {
-        double average = 0;
-        double value, overallAverage;
+        double dB, average = 0, dbSumTotal = 0;
         int count = 0;
 
         //FileOutputStream os;
@@ -49,7 +47,6 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
         recorder = new AudioRecord(SOURCE, SAMPLE_RATE, CHANNEL, ENCODING, bufferSize);
 
         short[] buffer = new short[bufferSize];
-        double[] avgArray = new double[bufferSize];
 
         endTime = System.currentTimeMillis() + 30000; // 30 seconds
         recorder.startRecording();
@@ -57,11 +54,13 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
             if (isCancelled()) break;
             recorder.read(buffer, 0, bufferSize);
             //os.write(buffer, 0, buffer.length); for writing data to output file; buffer must be byte
-            value = doFFT(buffer, avgArray);
-            if (value != Double.NEGATIVE_INFINITY) average += value;
-            count++;
-            overallAverage = 20 * Math.log10(average / count) + 8.25 + calibration;
-            publishProgress(overallAverage);
+            dB = doFFT(buffer);
+            if (dB != Double.NEGATIVE_INFINITY) {
+                dbSumTotal += dB;
+                count++;
+            }
+            average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
+            publishProgress(average);
         }
 
         //os.close();
@@ -114,9 +113,9 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
      * @param rawData the array of short PCM values. Can contain zeroes.
      * @return the average amplitude for the dataset
      */
-    private double doFFT(short[] rawData, double[] avgArray) {
+    private double doFFT(short[] rawData) {
         double[] fft = new double[2 * rawData.length];
-        double avg = 0.0, amp = 0.0;
+        double avg = 0.0, amplitude = 0.0;
 
         // get a half-filled array of double values for the fft calculation
         for (int i = 0; i < rawData.length; i++) {
@@ -128,9 +127,9 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
 
         // calculate the sum of amplitudes
         for (int i = 0; i < fft.length; i += 2) {
-            //                          reals               imaginary
-            amp += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2));
-            avg += amp * Values.A_WEIGHT_COEFFICIENTS[i / 2];
+            //                              reals                 imaginary
+            amplitude += Math.sqrt(Math.pow(fft[i], 2) + Math.pow(fft[i + 1], 2));
+            avg += amplitude * Values.A_WEIGHT_COEFFICIENTS[i / 2];
         }
 
         return avg / rawData.length;

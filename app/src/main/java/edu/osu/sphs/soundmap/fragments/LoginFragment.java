@@ -11,8 +11,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+
+import java.util.ArrayList;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.util.DataPoint;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -22,6 +26,8 @@ import edu.osu.sphs.soundmap.R;
 public class LoginFragment extends Fragment implements View.OnClickListener {
 
     private Button loginButton;
+    private DatabaseReference data;
+    private ArrayList<DataPoint> points = new ArrayList<>();
 
     public LoginFragment() {
         // Required empty public constructor

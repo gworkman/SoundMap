@@ -21,17 +21,16 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.util.DataPoint;
 import edu.osu.sphs.soundmap.util.Values;
 
 /**
@@ -39,14 +38,15 @@ import edu.osu.sphs.soundmap.util.Values;
  * Use the {@link MapFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MapFragment extends Fragment implements OnMapReadyCallback, OnSuccessListener<Location>, ValueEventListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, OnSuccessListener<Location> {
 
     private MapView mapView;
     private FusedLocationProviderClient locationProviderClient;
     private GoogleMap googleMap;
-    private DatabaseReference data;
     private Activity activity;
     private SharedPreferences prefs;
+    private List<DataPoint> points;
+
 
     public MapFragment() {
         // Required empty public constructor
@@ -59,9 +59,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
      * @return A new instance of fragment MapFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MapFragment newInstance() {
+    public static MapFragment newInstance(ArrayList<DataPoint> points) {
         MapFragment fragment = new MapFragment();
+        Bundle args = new Bundle();
+        args.putParcelableArrayList(Values.DATA_POINTS_KEY, points);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(Values.DATA_POINTS_KEY)) {
+            this.points = args.getParcelableArrayList(Values.DATA_POINTS_KEY);
+        }
     }
 
     @Override
@@ -92,8 +103,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, Values.LOCATION_REQUEST_CODE);
         }
-        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
-        data.addValueEventListener(this);
+
+        if (points != null) {
+            for (DataPoint point : points) {
+                this.googleMap.addMarker(new MarkerOptions().title(String.format(Locale.getDefault(), "%.3f", point.getDecibels()))
+                        .position(new LatLng(point.getLat(), point.getLon())).flat(true));
+            }
+        }
         mapView.onResume();
     }
 
@@ -124,39 +140,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
         mapView.onSaveInstanceState(outState);
     }
 
-    /*
-     * Firebase Database ValueEventListener
-     */
-
-    @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
-        if (googleMap != null) {
-            for (DataSnapshot point : dataSnapshot.getChildren()) {
-
-                // TODO: THIS IS SUPER HACKY, FIX IT
-                try {
-                    double decibels = Double.valueOf(point.child("Decibels").getValue().toString());
-                    double lat = Double.valueOf(point.child("Lat").getValue().toString());
-                    double lon = Double.valueOf(point.child("Long").getValue().toString());
-                    if (decibels < 70) {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                    } else if (decibels < 90) {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-                    } else {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-                    }
-                } catch (NullPointerException e) {
-                    // don't do anything
-                }
+    public void updateView() {
+        if (this.googleMap != null) {
+            this.googleMap.clear();
+            for (DataPoint point : points) {
+                this.googleMap.addMarker(new MarkerOptions().title(String.format(Locale.getDefault(), "%.3f", point.getDecibels()))
+                        .position(new LatLng(point.getLat(), point.getLon())).flat(true));
             }
         }
     }
 
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
 }

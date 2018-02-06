@@ -1,9 +1,8 @@
 package edu.osu.sphs.soundmap.util;
 
 /**
- * Created by Gus on 12/2/2017.
+ * Created by Gus on 12/2/2017. A class to manage the different static values used in this project
  */
-
 public class Values {
 
     /**
@@ -11,7 +10,15 @@ public class Values {
      */
     public static final int LOCATION_REQUEST_CODE = 11;
     public static final int AUDIO_REQUEST_CODE = 12;
+    public static final String DATA_POINTS_KEY = "data_points";
+    public static final int MAP_FRAGMENT_POSITION = 0;
+    public static final int MEAUSRE_FRAGMENT_POSITION = 1;
+    public static final int PROFILE_FRAGMENT_POSITION = 2;
 
+
+    /**
+     * A-weighting coefficients for the calculation
+     */
     public static final double A_WEIGHT_COEFFICIENTS[] =
             {0.0000015, 0.0001090, 0.0006764, 0.0020037, 0.0041787, 0.0071611,
                     0.0108691, 0.0152165, 0.0201233, 0.0255170, 0.0313322, 0.0375099,

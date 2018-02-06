@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
@@ -192,16 +191,11 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
     @Override
     public void onSuccess(Location location) {
-        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), location.getLatitude(),
-                location.getLongitude(), this.dBvalue);
+        DataPoint toUpload = new DataPoint(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), this.dBvalue, "gworkman");
 
         // create new node in Firebase
         DatabaseReference newNode = data.push();
-        newNode.child("Decibels").setValue(toUpload.getDecibels());
-        newNode.child("Lat").setValue(toUpload.getLat());
-        newNode.child("Long").setValue(toUpload.getLon());
-        newNode.child("Time").setValue(toUpload.getDate());
-        newNode.child("Device").setValue(Build.MANUFACTURER + " " + Build.MODEL);
+        newNode.setValue(toUpload);
 
         upload.setVisibility(View.GONE);
     }

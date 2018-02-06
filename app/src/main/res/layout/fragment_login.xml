@@ -4,12 +4,6 @@
     android:layout_height="match_parent"
     tools:context="edu.osu.sphs.soundmap.fragments.LoginFragment">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/login_background" />
-
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,7 +19,7 @@
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:text="Login or Create Account"
+            android:text="@string/login"
             android:textColor="@android:color/black"
             android:textSize="24sp" />
 
@@ -47,7 +41,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
-                android:hint="Email" />
+                android:hint="@string/email" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -70,7 +64,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
-                android:hint="Password" />
+                android:hint="@string/password" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -87,16 +81,5 @@
             android:textColor="@android:color/white" />
 
     </RelativeLayout>
-
-    <ImageView
-        android:id="@+id/osu_logo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:src="@drawable/osu_logo" />
 
 </RelativeLayout>

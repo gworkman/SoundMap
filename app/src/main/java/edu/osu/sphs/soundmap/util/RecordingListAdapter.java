@@ -1,5 +1,6 @@
 package edu.osu.sphs.soundmap.util;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,9 +18,11 @@ import edu.osu.sphs.soundmap.R;
 public class RecordingListAdapter extends RecyclerView.Adapter<RecordingListAdapter.ViewHolder> {
 
     private List<DataPoint> recordings;
+    private Context context;
 
-    public RecordingListAdapter(List<DataPoint> items) {
+    public RecordingListAdapter(Context context, List<DataPoint> items) {
         this.recordings = items;
+        this.context = context;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class RecordingListAdapter extends RecyclerView.Adapter<RecordingListAdap
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         DataPoint data = recordings.get(position);
-        String timestamp = data.getTimeString();
+        String timestamp = data.getTimeString(this.context);
         holder.date.setText(timestamp);
         String coords = data.getLat() + ", " + data.getLon();
         holder.latlong.setText(coords);

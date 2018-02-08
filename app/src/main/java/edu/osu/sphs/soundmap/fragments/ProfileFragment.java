@@ -11,17 +11,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
 
 import edu.osu.sphs.soundmap.R;
 import edu.osu.sphs.soundmap.util.DataPoint;
@@ -75,17 +69,6 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback {
         recycler = view.findViewById(R.id.recycler);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-
-        recordings = new ArrayList<>();
-
-        recordings.add(new DataPoint(getContext(), System.currentTimeMillis(), 40.12473, -83.12452, 45.2));
-        recordings.add(new DataPoint(getContext(), 1495189976235L, 40.52485, -83.73542, 70.1));
-        recordings.add(new DataPoint(getContext(), 1511468462432L, 39.47432, -83.22146, 95.6));
-        recordings.add(new DataPoint(getContext(), 1495487976235L, 40.52485, -83.73542, 73.1));
-        recordings.add(new DataPoint(getContext(), 1501460462432L, 39.47432, -83.22146, 90.6));
-
-        Collections.sort(recordings, new DataPoint.Compare());
-
         adapter = new RecordingListAdapter(recordings);
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -95,17 +78,8 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        Random r = new Random(System.currentTimeMillis());
-        LatLngBounds.Builder builder = LatLngBounds.builder();
-        for (int i = 0; i < 10; i++) {
-            r.setSeed(System.currentTimeMillis() * (System.currentTimeMillis() % 532));
-            double lat = (r.nextDouble() * .3) + 39.8;
-            double lon = (r.nextDouble() * .8) - 83.3;
-            LatLng latLng = new LatLng(lat, lon);
-            builder.include(latLng);
-            googleMap.addMarker(new MarkerOptions().position(latLng));
-        }
+
         mapView.onResume();
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
+        //googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
     }
 }

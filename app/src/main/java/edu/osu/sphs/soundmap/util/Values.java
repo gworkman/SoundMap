@@ -12,6 +12,14 @@ public class Values {
     public static final int LOCATION_REQUEST_CODE = 11;
     public static final int AUDIO_REQUEST_CODE = 12;
 
+    /**
+     * String keys for bundles, maps, etc
+     */
+    public static final String UID_KEY = "uid_key";
+    public static final String DATA_SRC_PREF = "data_source_preference";
+    public static final String LAST_LAT_KEY = "last_lat";
+    public static final String LAST_LNG_KEY = "last_lng";
+
     public static final double A_WEIGHT_COEFFICIENTS[] =
             {0.0000015, 0.0001090, 0.0006764, 0.0020037, 0.0041787, 0.0071611,
                     0.0108691, 0.0152165, 0.0201233, 0.0255170, 0.0313322, 0.0375099,

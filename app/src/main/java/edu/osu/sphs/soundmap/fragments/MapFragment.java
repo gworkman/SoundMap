@@ -31,7 +31,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Locale;
+
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.util.DataPoint;
 import edu.osu.sphs.soundmap.util.Values;
 
 /**
@@ -113,7 +116,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13.0f));
         } else {
-            LatLng latLng = new LatLng(prefs.getFloat("last_lat", 40), prefs.getFloat("last_long", -83));
+            LatLng latLng = new LatLng(prefs.getFloat(Values.LAST_LAT_KEY, 40), prefs.getFloat(Values.LAST_LNG_KEY, -83));
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13.0f));
         }
     }
@@ -131,25 +134,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
         if (googleMap != null) {
+            DataPoint p;
             for (DataSnapshot point : dataSnapshot.getChildren()) {
-
-                // TODO: THIS IS SUPER HACKY, FIX IT
-                try {
-                    double decibels = Double.valueOf(point.child("Decibels").getValue().toString());
-                    double lat = Double.valueOf(point.child("Lat").getValue().toString());
-                    double lon = Double.valueOf(point.child("Long").getValue().toString());
-                    if (decibels < 70) {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
+                p = point.getValue(DataPoint.class);
+                if (p != null) {
+                    if (p.getDecibels() < 60) {
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(p.getLat(), p.getLon()))
+                                .title(String.format(Locale.getDefault(), "%.5f decibels", p.getDecibels()))
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                    } else if (decibels < 90) {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
+                    } else if (p.getDecibels() < 90) {
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(p.getLat(), p.getLon()))
+                                .title(String.format(Locale.getDefault(), "%.5f decibels", p.getDecibels()))
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
                     } else {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(p.getLat(), p.getLon()))
+                                .title(String.format(Locale.getDefault(), "%.5f decibels", p.getDecibels()))
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
                     }
-                } catch (NullPointerException e) {
-                    // don't do anything
                 }
             }
         }
@@ -157,6 +161,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
 
     @Override
     public void onCancelled(DatabaseError databaseError) {
-
+        // eh
     }
 }

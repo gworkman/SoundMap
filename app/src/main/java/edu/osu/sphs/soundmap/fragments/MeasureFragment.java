@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
@@ -51,9 +50,11 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private CountDownTimer chronometer;
     private MeasureTask measureTask;
     private DatabaseReference data;
+    private DatabaseReference users;
     private FusedLocationProviderClient locationProviderClient;
     private SharedPreferences prefs;
     private Activity activity;
+    private String uid;
 
     public MeasureFragment() {
         // Required empty public constructor
@@ -66,19 +67,25 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
      * @return A new instance of fragment MeasureFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MeasureFragment newInstance() {
+    public static MeasureFragment newInstance(String uid) {
         MeasureFragment fragment = new MeasureFragment();
+        Bundle args = new Bundle();
+        args.putString(Values.UID_KEY, uid);
+        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(Values.UID_KEY)) {
+            this.uid = args.getString(Values.UID_KEY);
+        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_measure, container, false);
     }
@@ -89,7 +96,8 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+        data = FirebaseDatabase.getInstance().getReference(prefs.getString(Values.DATA_SRC_PREF, "bad-input"));
+        users = FirebaseDatabase.getInstance().getReference("users-test");
         locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
     }
 
@@ -192,17 +200,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
     @Override
     public void onSuccess(Location location) {
-        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), location.getLatitude(),
-                location.getLongitude(), this.dBvalue);
+        DataPoint toUpload = new DataPoint(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), this.dBvalue, this.uid);
 
-        // create new node in Firebase
-        DatabaseReference newNode = data.push();
-        newNode.child("Decibels").setValue(toUpload.getDecibels());
-        newNode.child("Lat").setValue(toUpload.getLat());
-        newNode.child("Long").setValue(toUpload.getLon());
-        newNode.child("Time").setValue(toUpload.getDate());
-        newNode.child("Device").setValue(Build.MANUFACTURER + " " + Build.MODEL);
-
+        // create new node in Firebase under general node and user specific node
+        DatabaseReference generalNode = data.push();
+        generalNode.setValue(toUpload);
+        DatabaseReference userNode = users.child(this.uid).push();
+        userNode.setValue(toUpload);
         upload.setVisibility(View.GONE);
     }
 }

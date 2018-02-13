@@ -6,6 +6,7 @@ import android.view.MenuItem;
 
 import edu.osu.sphs.soundmap.R;
 import edu.osu.sphs.soundmap.fragments.SettingsFragment;
+import edu.osu.sphs.soundmap.util.Values;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -23,6 +24,7 @@ public class SettingsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                setResult(Values.SETTINGS_CHANGED);
                 finish();
                 break;
             default:

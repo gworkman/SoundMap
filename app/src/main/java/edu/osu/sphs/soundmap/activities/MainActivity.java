@@ -23,6 +23,7 @@ import edu.osu.sphs.soundmap.fragments.LoginFragment;
 import edu.osu.sphs.soundmap.fragments.MapFragment;
 import edu.osu.sphs.soundmap.fragments.MeasureFragment;
 import edu.osu.sphs.soundmap.fragments.ProfileFragment;
+import edu.osu.sphs.soundmap.util.Values;
 import edu.osu.sphs.soundmap.util.ViewPagerAdapter;
 
 /**
@@ -199,12 +200,22 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         switch (item.getItemId()) {
             case R.id.menu_settings:
                 Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, Values.SETTINGS_RESULT_CODE);
                 break;
             default:
                 return false;
         }
-
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Values.SETTINGS_RESULT_CODE) {
+            if (resultCode == Values.SETTINGS_CHANGED) {
+                ((MapFragment) fragments.get(0)).updateFragment();
+                ((MeasureFragment) fragments.get(1)).updateFragment();
+                ((ProfileFragment) fragments.get(1)).updateFragment();
+            }
+        }
     }
 }

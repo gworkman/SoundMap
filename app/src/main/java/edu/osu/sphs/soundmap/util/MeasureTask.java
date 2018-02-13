@@ -59,7 +59,8 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
                 dbSumTotal += dB;
                 count++;
             }
-            average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
+            //average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
+            average = 20 * Math.log10(dB) + 8.25 + calibration;
             publishProgress(average);
         }
 

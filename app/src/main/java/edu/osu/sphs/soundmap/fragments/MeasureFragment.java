@@ -205,4 +205,8 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
         upload.setVisibility(View.GONE);
     }
+
+    public void updateFragment() {
+        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+    }
 }

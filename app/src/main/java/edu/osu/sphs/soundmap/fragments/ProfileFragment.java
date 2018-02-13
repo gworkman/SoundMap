@@ -75,6 +75,7 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback {
         recycler = view.findViewById(R.id.recycler);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+        mapView.setClickable(false);
 
         recordings = new ArrayList<>();
 
@@ -107,5 +108,9 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback {
         }
         mapView.onResume();
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
+    }
+
+    public void updateFragment() {
+        // do nothing for now
     }
 }

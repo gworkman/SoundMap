@@ -159,4 +159,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
     public void onCancelled(DatabaseError databaseError) {
 
     }
+
+    public void updateFragment() {
+        this.googleMap.clear();
+        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+        data.addValueEventListener(this);
+    }
 }

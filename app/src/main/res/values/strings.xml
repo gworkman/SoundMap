@@ -16,4 +16,10 @@
     <string name="choose_source_title">Choose database source</string>
     <string name="choose_source_summary">This is the database that data will be pulled from and pushed to</string>
     <string name="data_source_pref">data_source_preference</string>
+    <string name="create_an_account">Create an Account</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="retype_password">Retype password</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="logout_preference">logout_preference</string>
 </resources>

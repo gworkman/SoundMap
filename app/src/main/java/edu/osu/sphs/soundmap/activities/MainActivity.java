@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -144,10 +143,8 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         this.fragments.remove(2);
         if (firebaseAuth.getCurrentUser() != null) {
             this.fragments.add(2, ProfileFragment.newInstance());
-            Log.d(TAG, "onAuthStateChanged: Added ProfileFragment");
         } else {
             this.fragments.add(2, LoginFragment.newInstance());
-            Log.d(TAG, "onAuthStateChanged: Added LoginFragment");
         }
         this.pagerAdapter.notifyDataSetChanged();
         this.viewPager.invalidate();
@@ -214,7 +211,9 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
             if (resultCode == Values.SETTINGS_CHANGED) {
                 ((MapFragment) fragments.get(0)).updateFragment();
                 ((MeasureFragment) fragments.get(1)).updateFragment();
-                ((ProfileFragment) fragments.get(1)).updateFragment();
+                if (auth != null) {
+                    onAuthStateChanged(auth);
+                }
             }
         }
     }

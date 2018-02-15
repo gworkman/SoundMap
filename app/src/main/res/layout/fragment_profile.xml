@@ -21,7 +21,8 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:background="@color/dark">
+            android:background="@color/dark"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/profile_picture"
@@ -70,7 +71,7 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_below="@id/my_recordings_text"
             android:clipToPadding="false"
             android:paddingBottom="8dp"

@@ -2,10 +2,10 @@ package edu.osu.sphs.soundmap.fragments;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -51,9 +52,12 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private CountDownTimer chronometer;
     private MeasureTask measureTask;
     private DatabaseReference data;
+    private DatabaseReference user;
+    private FirebaseAuth auth;
     private FusedLocationProviderClient locationProviderClient;
     private SharedPreferences prefs;
     private Activity activity;
+    private Context context;
 
     public MeasureFragment() {
         // Required empty public constructor
@@ -86,10 +90,15 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         if (activity == null) activity = getActivity();
+        context = getContext();
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
-        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
         data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+        auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            user = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid());
+        }
         locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
     }
 
@@ -98,7 +107,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fab:
-                if (ActivityCompat.checkSelfPermission(v.getContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
 
                     if (measureTask == null) {
                         measureTask = new MeasureTask();
@@ -192,17 +201,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
     @Override
     public void onSuccess(Location location) {
-        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), location.getLatitude(),
-                location.getLongitude(), this.dBvalue);
+        DataPoint toUpload = new DataPoint(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), this.dBvalue);
 
         // create new node in Firebase
-        DatabaseReference newNode = data.push();
-        newNode.child("Decibels").setValue(toUpload.getDecibels());
-        newNode.child("Lat").setValue(toUpload.getLat());
-        newNode.child("Long").setValue(toUpload.getLon());
-        newNode.child("Time").setValue(toUpload.getDate());
-        newNode.child("Device").setValue(Build.MANUFACTURER + " " + Build.MODEL);
-
+        data.push().setValue(toUpload);
+        if (user != null) {
+            user.push().setValue(toUpload);
+        }
         upload.setVisibility(View.GONE);
     }
 

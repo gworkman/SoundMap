@@ -16,11 +16,6 @@
         android:summary="@string/save_local_summary"
         android:title="@string/save_local_title" />
 
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="@string/debug_mode_pref"
-        android:title="Debug mode" />
-
     <ListPreference
         android:defaultValue="iOS"
         android:entries="@array/databaseSelectorArray"
@@ -29,5 +24,9 @@
         android:summary="@string/choose_source_summary"
         android:title="@string/choose_source_title" />
 
+    <Preference
+        android:key="@string/logout_preference"
+        android:summary="When logged out, you are unable to upload to the database"
+        android:title="Logout my of Sound Map account" />
 
 </PreferenceScreen>

@@ -2,6 +2,7 @@ package edu.osu.sphs.soundmap.fragments;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -31,7 +32,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Locale;
+
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.util.DataPoint;
 import edu.osu.sphs.soundmap.util.Values;
 
 /**
@@ -47,6 +51,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
     private DatabaseReference data;
     private Activity activity;
     private SharedPreferences prefs;
+    private Context context;
 
     public MapFragment() {
         // Required empty public constructor
@@ -74,25 +79,25 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         if (activity == null) activity = getActivity();
-        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        context = getContext();
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
         mapView = view.findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
         locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
-
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             googleMap.setMyLocationEnabled(true);
             locationProviderClient.getLastLocation().addOnSuccessListener(this);
         } else {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, Values.LOCATION_REQUEST_CODE);
         }
-        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+        data = FirebaseDatabase.getInstance().getReference(prefs.getString(Values.DATA_SOURCE_PREF, null));
         data.addValueEventListener(this);
         mapView.onResume();
     }
@@ -111,10 +116,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
     public void onSuccess(Location location) {
         if (location != null) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13.0f));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
         } else {
             LatLng latLng = new LatLng(prefs.getFloat("last_lat", 40), prefs.getFloat("last_long", -83));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13.0f));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
         }
     }
 
@@ -131,25 +136,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
         if (googleMap != null) {
-            for (DataSnapshot point : dataSnapshot.getChildren()) {
-
-                // TODO: THIS IS SUPER HACKY, FIX IT
-                try {
-                    double decibels = Double.valueOf(point.child("Decibels").getValue().toString());
-                    double lat = Double.valueOf(point.child("Lat").getValue().toString());
-                    double lon = Double.valueOf(point.child("Long").getValue().toString());
-                    if (decibels < 70) {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                    } else if (decibels < 90) {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-                    } else {
-                        googleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title(decibels + " dB")
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-                    }
-                } catch (NullPointerException e) {
-                    // don't do anything
+            for (DataSnapshot child : dataSnapshot.getChildren()) {
+                DataPoint point = child.getValue(DataPoint.class);
+                if (point.getDecibels() < 70) {
+                    googleMap.addMarker(new MarkerOptions().position(new LatLng(point.getLat(), point.getLon()))
+                            .title(String.format(Locale.getDefault(), "%.02f dB", point.getDecibels()))
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                } else if (point.getDecibels() < 90) {
+                    googleMap.addMarker(new MarkerOptions().position(new LatLng(point.getLat(), point.getLon()))
+                            .title(String.format(Locale.getDefault(), "%.02f dB", point.getDecibels()))
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                } else {
+                    googleMap.addMarker(new MarkerOptions().position(new LatLng(point.getLat(), point.getLon()))
+                            .title(String.format(Locale.getDefault(), "%.02f dB", point.getDecibels()))
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
                 }
             }
         }
@@ -162,7 +162,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
 
     public void updateFragment() {
         this.googleMap.clear();
-        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+        data = FirebaseDatabase.getInstance().getReference(prefs.getString(Values.DATA_SOURCE_PREF, null));
         data.addValueEventListener(this);
     }
 }

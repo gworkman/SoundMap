@@ -30,7 +30,6 @@ public class SettingsActivity extends AppCompatActivity {
             default:
                 return false;
         }
-
         return true;
     }
 }

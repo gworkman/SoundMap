@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     private ViewPagerAdapter pagerAdapter;
     private FloatingActionButton fab;
     private FloatingActionButton upload;
+    private CoordinatorLayout coordinator;
     private boolean fabIsSetup = false;
     private FirebaseAuth auth;
     private List<Fragment> fragments = new ArrayList<>();
@@ -60,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         viewPager = findViewById(R.id.viewPager);
         fab = findViewById(R.id.fab);
         upload = findViewById(R.id.fab_upload);
+        coordinator = findViewById(R.id.coordinator);
     }
 
     /**
@@ -216,5 +220,9 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                 }
             }
         }
+    }
+
+    public void setErrorMessage(String message) {
+        Snackbar.make(coordinator, message, Snackbar.LENGTH_LONG).show();
     }
 }

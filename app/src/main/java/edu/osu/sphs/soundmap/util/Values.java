@@ -15,6 +15,7 @@ public class Values {
     public static final int SETTINGS_CHANGED = 14;
     public static final String USER_NODE = "users";
     public static final String DATA_SOURCE_PREF = "data_source_preference";
+    public static final String FUNCTION_VALID_LOCATION_URL = "https://us-central1-fethapp.cloudfunctions.net/validLocation?lat=<lat>&lon=<lon>";
 
     public static final double A_WEIGHT_COEFFICIENTS[] =
             {0.0000015, 0.0001090, 0.0006764, 0.0020037, 0.0041787, 0.0071611,

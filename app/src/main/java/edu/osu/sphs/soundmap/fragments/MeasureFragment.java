@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
@@ -19,9 +21,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -29,6 +38,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.Locale;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.activities.MainActivity;
 import edu.osu.sphs.soundmap.util.DataPoint;
 import edu.osu.sphs.soundmap.util.MeasureTask;
 import edu.osu.sphs.soundmap.util.Values;
@@ -38,7 +48,7 @@ import edu.osu.sphs.soundmap.util.Values;
  * Use the {@link MeasureFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MeasureFragment extends Fragment implements View.OnClickListener, MeasureTask.OnUpdateCallback, OnSuccessListener<Location> {
+public class MeasureFragment extends Fragment implements View.OnClickListener, MeasureTask.OnUpdateCallback {
 
     private static final String TAG = "MeasureFragment";
 
@@ -56,6 +66,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private FirebaseAuth auth;
     private FusedLocationProviderClient locationProviderClient;
     private SharedPreferences prefs;
+    private RequestQueue queue;
     private Activity activity;
     private Context context;
 
@@ -91,12 +102,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         if (activity == null) activity = getActivity();
         context = getContext();
+        queue = Volley.newRequestQueue(context);
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
         data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
         auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null) {
+        if (auth != null && auth.getCurrentUser() != null && auth.getUid() != null) {
             user = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid());
         }
         locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
@@ -107,6 +119,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fab:
+                fab = (FloatingActionButton) v;
                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
 
                     if (measureTask == null) {
@@ -115,27 +128,59 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                     }
 
                     if (!isRunning) {
-                        fab = (FloatingActionButton) v;
-                        chronometer = new CountDownTimer(30000, 100) {
-                            @Override
-                            public void onTick(long millisUntilFinished) {
-                                int seconds = (int) (millisUntilFinished / 1000);
-                                int decimal = (int) (millisUntilFinished % 1000 / 100.0);
-                                String timerValue = seconds + "." + decimal + " seconds";
-                                timer.setText(timerValue);
-                            }
+                        if (/*isMicPluggedIn()*/ true) {
+                            locationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Location> task) {
+                                    if (task.isSuccessful()) {
+                                        Location location = task.getResult();
+                                        String url = Values.FUNCTION_VALID_LOCATION_URL
+                                                .replace("<lat>", String.valueOf(location.getLatitude()))
+                                                .replace("<lon>", String.valueOf(location.getLongitude()));
+                                        StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+                                            @Override
+                                            public void onResponse(String response) {
+                                                if (response.matches("true")) {
+                                                    chronometer = new CountDownTimer(30000, 100) {
+                                                        @Override
+                                                        public void onTick(long millisUntilFinished) {
+                                                            int seconds = (int) (millisUntilFinished / 1000);
+                                                            int decimal = (int) (millisUntilFinished % 1000 / 100.0);
+                                                            String timerValue = seconds + "." + decimal + " seconds";
+                                                            timer.setText(timerValue);
+                                                        }
 
-                            @Override
-                            public void onFinish() {
-                                fab.setImageResource(R.drawable.ic_record);
-                                isRunning = false;
-                                measureTask = null;
-                            }
-                        }.start();
-                        fab.setImageResource(R.drawable.ic_stop);
-                        upload.setVisibility(View.GONE);
-                        isRunning = true;
-                        measureTask.execute();
+                                                        @Override
+                                                        public void onFinish() {
+                                                            fab.setImageResource(R.drawable.ic_record);
+                                                            isRunning = false;
+                                                            measureTask = null;
+                                                        }
+                                                    }.start();
+                                                    fab.setImageResource(R.drawable.ic_stop);
+                                                    upload.setVisibility(View.GONE);
+                                                    isRunning = true;
+                                                    measureTask.execute();
+                                                } else {
+                                                    ((MainActivity) activity).setErrorMessage("There has already been a recent recording in this area");
+                                                }
+                                            }
+                                        }, new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+                                                ((MainActivity) activity).setErrorMessage(error.getMessage());
+                                            }
+                                        });
+                                        queue.add(request);
+                                    } else {
+                                        ((MainActivity) activity).setErrorMessage("Unable to get an accurate device location");
+                                    }
+                                }
+                            });
+
+                        } else {
+                            ((MainActivity) activity).setErrorMessage("Microphone is not plugged in");
+                        }
 
                     } else {
                         chronometer.cancel();
@@ -159,7 +204,24 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                     upload = (FloatingActionButton) v;
                     uploadInitialized = true;
                 } else {
-                    locationProviderClient.getLastLocation().addOnSuccessListener(this);
+                    locationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Location> task) {
+                            if (task.isSuccessful()) {
+                                Location location = task.getResult();
+                                DataPoint toUpload = new DataPoint(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), dBvalue);
+
+                                // create new node in Firebase
+                                data.push().setValue(toUpload);
+                                if (user != null) {
+                                    user.push().setValue(toUpload);
+                                }
+                                upload.setVisibility(View.GONE);
+                            } else {
+                                ((MainActivity) activity).setErrorMessage("Was unable to get an accurate location");
+                            }
+                        }
+                    });
                 }
         }
     }
@@ -199,19 +261,23 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         }
     }
 
-    @Override
-    public void onSuccess(Location location) {
-        DataPoint toUpload = new DataPoint(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), this.dBvalue);
-
-        // create new node in Firebase
-        data.push().setValue(toUpload);
-        if (user != null) {
-            user.push().setValue(toUpload);
-        }
-        upload.setVisibility(View.GONE);
-    }
-
     public void updateFragment() {
         data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+    }
+
+    private boolean isMicPluggedIn() {
+        boolean micIn = false;
+        AudioManager manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            AudioDeviceInfo[] devices = manager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+            for (AudioDeviceInfo device : devices) {
+                micIn = (device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADSET) ||
+                        (device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) ||
+                        micIn;
+            }
+        } else {
+            micIn = manager.isWiredHeadsetOn();
+        }
+        return micIn;
     }
 }

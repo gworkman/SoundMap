@@ -77,6 +77,28 @@
             android:paddingBottom="8dp"
             android:paddingTop="8dp" />
 
+        <TextView
+            android:id="@+id/no_measurements_text"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/my_recordings_text"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="40dp"
+            android:gravity="center"
+            android:text="@string/no_measurements_yet"
+            android:textSize="20sp"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/no_measurements_image"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_below="@id/no_measurements_text"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/ic_no_measurements"
+            android:visibility="gone" />
+
     </RelativeLayout>
 
 </RelativeLayout>

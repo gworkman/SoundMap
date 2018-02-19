@@ -11,6 +11,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -53,6 +55,8 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
     private DatabaseReference data;
     private FirebaseAuth auth;
     private Context context;
+    private TextView noMeasurements;
+    private ImageView noMeasurementsIcon;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -86,6 +90,8 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mapView = view.findViewById(R.id.map_background);
         recycler = view.findViewById(R.id.recycler);
+        noMeasurements = view.findViewById(R.id.no_measurements_text);
+        noMeasurementsIcon = view.findViewById(R.id.no_measurements_image);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
         mapView.setClickable(false);
@@ -107,6 +113,7 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
+        googleMap.setBuildingsEnabled(true);
         mapView.onResume();
     }
 
@@ -115,6 +122,16 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
         this.recordings.clear();
         for (DataSnapshot point : dataSnapshot.getChildren()) {
             recordings.add(point.getValue(DataPoint.class));
+        }
+
+        if (this.recordings.size() == 0) {
+            noMeasurementsIcon.setVisibility(View.VISIBLE);
+            noMeasurements.setVisibility(View.VISIBLE);
+            recycler.setVisibility(View.GONE);
+        } else {
+            noMeasurementsIcon.setVisibility(View.GONE);
+            noMeasurements.setVisibility(View.GONE);
+            recycler.setVisibility(View.VISIBLE);
         }
 
         Collections.sort(recordings, new DataPoint.Compare());

@@ -16,13 +16,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.activities.MainActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -201,7 +201,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener, OnC
     @Override
     public void onComplete(@NonNull Task task) {
         if (!task.isSuccessful()) {
-            Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+            ((MainActivity) getActivity()).setErrorMessage(task.getException().getMessage());
         }
     }
 

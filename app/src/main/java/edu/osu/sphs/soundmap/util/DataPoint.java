@@ -29,8 +29,6 @@ public final class DataPoint {
     private double lat;
     private double lon;
     private double decibels;
-    private String near;
-    private Geocoder geocoder;
 
     public DataPoint() {
         // empty, required for firebase

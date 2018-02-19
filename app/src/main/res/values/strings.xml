@@ -22,4 +22,6 @@
     <string name="password">Password</string>
     <string name="email">Email</string>
     <string name="logout_preference">logout_preference</string>
+    <string name="back">Back</string>
+    <string name="no_measurements_yet">No measurements yet. Press the measure button to the left to get started!</string>
 </resources>

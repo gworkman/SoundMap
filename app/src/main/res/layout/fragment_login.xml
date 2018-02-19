@@ -44,7 +44,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
-                android:hint="@string/email" />
+                android:hint="@string/email"
+                android:inputType="textEmailAddress" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -66,7 +67,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
-                android:hint="@string/password" />
+                android:hint="@string/password"
+                android:inputType="textPassword" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -89,7 +91,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
-                android:hint="@string/retype_password" />
+                android:hint="@string/retype_password"
+                android:inputType="textPassword" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -137,7 +140,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="12dp"
             android:layout_marginEnd="16dp"
-            android:text="Back"
+            android:text="@string/back"
             android:textSize="12sp"
             android:visibility="gone" />
 

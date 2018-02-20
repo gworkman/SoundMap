@@ -29,16 +29,18 @@ public final class DataPoint {
     private double lat;
     private double lon;
     private double decibels;
+    private String device;
 
     public DataPoint() {
         // empty, required for firebase
     }
 
-    public DataPoint(long date, double lat, double lon, double decibels) {
+    public DataPoint(long date, double lat, double lon, double decibels, String device) {
         this.date = date;
         this.lat = lat;
         this.lon = lon;
         this.decibels = decibels;
+        this.device = device;
     }
 
     @Exclude

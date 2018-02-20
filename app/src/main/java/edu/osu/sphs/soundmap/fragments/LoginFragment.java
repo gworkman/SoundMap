@@ -1,7 +1,6 @@
 package edu.osu.sphs.soundmap.fragments;
 
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -31,7 +30,7 @@ import edu.osu.sphs.soundmap.activities.MainActivity;
  */
 public class LoginFragment extends Fragment implements View.OnClickListener, OnCompleteListener {
 
-    private Context context;
+    private MainActivity activity;
     private TextView title;
     private Button loginButton, createButton, resetButton, backButton;
     private TextInputLayout emailLayout, passLayout, retypeLayout;
@@ -63,6 +62,8 @@ public class LoginFragment extends Fragment implements View.OnClickListener, OnC
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        activity = (MainActivity) getActivity();
+
         loginButton = view.findViewById(R.id.login_button);
         createButton = view.findViewById(R.id.create_account_button);
         resetButton = view.findViewById(R.id.reset_account_button);
@@ -132,7 +133,6 @@ public class LoginFragment extends Fragment implements View.OnClickListener, OnC
         retypeLayout = view.findViewById(R.id.retype_password_layout);
 
         state = State.STATE_LOGIN;
-        context = getContext();
         auth = FirebaseAuth.getInstance();
     }
 

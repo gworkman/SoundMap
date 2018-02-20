@@ -14,9 +14,8 @@ public class Values {
     public static final int SETTINGS_RESULT_CODE = 13;
     public static final int SETTINGS_CHANGED = 14;
     public static final String USER_NODE = "users";
-    public static final String DATA_SOURCE_PREF = "data_source_preference";
-    public static final String FUNCTION_VALID_LOCATION_URL = "https://us-central1-fethapp.cloudfunctions.net/validLocation?lat=<lat>&lon=<lon>";
-
+    public static final String DATA_REFERNCE = "android-test";
+    public static final String LOCAL_ONLY_PREF = "local_only_preference";
     public static final double A_WEIGHT_COEFFICIENTS[] =
             {0.0000015, 0.0001090, 0.0006764, 0.0020037, 0.0041787, 0.0071611,
                     0.0108691, 0.0152165, 0.0201233, 0.0255170, 0.0313322, 0.0375099,
@@ -1384,4 +1383,27 @@ public class Values {
                     0.0712991, 0.0712829, 0.0712667, 0.0712505, 0.0712343, 0.0712182,
                     0.0712020, 0.0711859, 0.0711697, 0.0711536, 0.0711374, 0.0711213,
                     0.0711052, 0.0710890};
+
+    /*
+     * The following 3 functions have been modified from the open source versions at geodatasource.com.
+     * Original code can be found at https://www.geodatasource.com/developers/java
+     */
+    public static double distance(double lat1, double lon1, double lat2, double lon2) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        dist = dist * 1.609344;
+
+        return (dist);
+    }
+
+    private static double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private static double rad2deg(double rad) {
+        return (rad * 180 / Math.PI);
+    }
 }

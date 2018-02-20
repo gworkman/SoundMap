@@ -9,8 +9,6 @@
     <string name="calibration_pref">calibration_preference</string>
     <string name="save_local_pref">save_local_preference</string>
     <string name="debug_mode_pref">debug_mode_preference</string>
-    <string name="save_local_summary">Enables offline viewing of measurements</string>
-    <string name="save_local_title">Save my recordings locally</string>
     <string name="calibrate_summary">Calibrate your device to known sound levels</string>
     <string name="calibrate_title">Calibration</string>
     <string name="choose_source_title">Choose database source</string>
@@ -24,4 +22,7 @@
     <string name="logout_preference">logout_preference</string>
     <string name="back">Back</string>
     <string name="no_measurements_yet">No measurements yet. Press the measure button to the left to get started!</string>
+    <string name="local_only_pref">local_only_preference</string>
+    <string name="local_only_summary">Removes the requirement that measurements must be taken with a microphone and allows for multiple measurements to be taken in the same area in a short time. Measurements in local only mode are not saved.</string>
+    <string name="local_only_title">Local only mode</string>
 </resources>

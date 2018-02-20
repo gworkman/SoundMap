@@ -1,6 +1,5 @@
 package edu.osu.sphs.soundmap.fragments;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.activities.MainActivity;
 import edu.osu.sphs.soundmap.util.DataPoint;
 import edu.osu.sphs.soundmap.util.RecordingListAdapter;
 import edu.osu.sphs.soundmap.util.Values;
@@ -54,7 +54,7 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
     private List<DataPoint> recordings = new ArrayList<>();
     private DatabaseReference data;
     private FirebaseAuth auth;
-    private Context context;
+    private MainActivity activity;
     private TextView noMeasurements;
     private ImageView noMeasurementsIcon;
 
@@ -96,15 +96,15 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
         mapView.getMapAsync(this);
         mapView.setClickable(false);
 
-        context = getContext();
+        activity = (MainActivity) getActivity();
 
-        adapter = new RecordingListAdapter(context, recordings);
+        adapter = new RecordingListAdapter(activity, recordings);
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
-        recycler.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
+        recycler.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
 
         auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null) {
+        if (auth.getCurrentUser() != null && auth != null) {
             data = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid());
             data.addValueEventListener(this);
         }
@@ -113,7 +113,6 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        googleMap.setBuildingsEnabled(true);
         mapView.onResume();
     }
 

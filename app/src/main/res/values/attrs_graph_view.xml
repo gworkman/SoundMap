@@ -1,0 +1,16 @@
+<resources>
+    <declare-styleable name="GraphView">
+        <attr name="axes_color" format="color" />
+        <attr name="line_color" format="color" />
+        <attr name="point_color" format="color" />
+        <attr name="grids_x" format="integer" />
+        <attr name="grids_y" format="integer" />
+        <attr name="max_x" format="float" />
+        <attr name="max_y" format="float" />
+        <attr name="min_y" format="float" />
+        <attr name="x_label" format="string" />
+        <attr name="y_label" format="string" />
+        <attr name="point_size" format="dimension" />
+        <attr name="label_size" format="dimension" />
+    </declare-styleable>
+</resources>

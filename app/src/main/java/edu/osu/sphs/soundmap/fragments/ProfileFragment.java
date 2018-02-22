@@ -166,6 +166,8 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
             }
             googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 0));
             googleMap.moveCamera(CameraUpdateFactory.zoomOut());
+        } else {
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(39.8283, -98.5795), 3f));
         }
 
         mapView.onResume();

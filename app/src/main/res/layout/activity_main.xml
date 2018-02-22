@@ -42,14 +42,14 @@
         android:visibility="gone"
         app:backgroundTint="@color/osuGreyLight" />
 
-    <!-- consider a bottom margin of -98dp -->
+    <!-- consider a bottom margin of -72dp -->
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="96dp"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="-76dp"
+        android:layout_marginBottom="-98dp"
         android:src="@drawable/ic_record"
         app:backgroundTint="@color/osuScarlet"/>
 

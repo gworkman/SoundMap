@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,21 +12,32 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="32dp"
-        android:textSize="40sp"
-        android:text="30.0 seconds"/>
-
-    <!--Eventually have a custom graph with the measurements plotted-->
-
-    <!--Eventually get a visualization of current dB level-->
+        android:text="30.0 seconds"
+        android:textSize="40sp" />
 
     <TextView
         android:id="@+id/dB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/timer"
-        android:textSize="60sp"
-        android:text="0 dB"/>
+        android:layout_centerHorizontal="true"
+        android:text="0 dB"
+        android:textSize="60sp" />
 
+    <edu.osu.sphs.soundmap.util.GraphView
+        android:id="@+id/graph_view"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@id/dB"
+        android:layout_marginTop="16dp"
+        android:paddingEnd="8dp"
+        app:axes_color="@android:color/black"
+        app:label_size="16sp"
+        app:max_x="300"
+        app:max_y="100"
+        app:min_y="20"
+        app:point_color="@color/colorPrimary"
+        app:x_label="Time(s)"
+        app:y_label="dB(A)" />
 
 </RelativeLayout>

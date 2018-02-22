@@ -36,7 +36,7 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
 
     @Override
     protected Double doInBackground(Void... voids) {
-        double dB, average = 0, dbSumTotal = 0;
+        double dB, average = 0, dbSumTotal = 0, instant = 0;
         int count = 0;
 
         //FileOutputStream os;
@@ -60,8 +60,8 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
                 count++;
             }
             average = 20 * Math.log10(dbSumTotal / count) + 8.25 + calibration;
-            //average = 20 * Math.log10(dB) + 8.25 + calibration;
-            publishProgress(average);
+            instant = 20 * Math.log10(dB) + 8.25 + calibration;
+            publishProgress(average, instant);
         }
 
         //os.close();
@@ -89,7 +89,7 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
     @Override
     protected void onProgressUpdate(Double... values) {
         if (callback != null) {
-            callback.onUpdate(values[0]);
+            callback.onUpdate(values[0], values[1]);
         }
     }
 
@@ -137,7 +137,7 @@ public class MeasureTask extends AsyncTask<Void, Double, Double> {
     }
 
     public interface OnUpdateCallback {
-        void onUpdate(double averageDB);
+        void onUpdate(double averageDB, double instantDB);
         void onFinish(int result);
         double getCalibration();
     }

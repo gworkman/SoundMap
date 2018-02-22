@@ -34,6 +34,7 @@ import java.util.Locale;
 import edu.osu.sphs.soundmap.R;
 import edu.osu.sphs.soundmap.activities.MainActivity;
 import edu.osu.sphs.soundmap.util.DataPoint;
+import edu.osu.sphs.soundmap.util.GraphView;
 import edu.osu.sphs.soundmap.util.MeasureTask;
 import edu.osu.sphs.soundmap.util.Values;
 
@@ -50,6 +51,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private TextView dB;
     private FloatingActionButton fab;
     private FloatingActionButton upload;
+    private GraphView graph;
     private boolean isRunning = false;
     private boolean uploadInitialized = false;
     private boolean localOnlyMode = false;
@@ -96,6 +98,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         if (activity == null) activity = (MainActivity) getActivity();
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
+        graph = view.findViewById(R.id.graph_view);
         prefs = PreferenceManager.getDefaultSharedPreferences(activity);
         data = FirebaseDatabase.getInstance().getReference(Values.DATA_REFERNCE);
         auth = FirebaseAuth.getInstance();
@@ -146,6 +149,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                                             fab.setImageResource(R.drawable.ic_stop);
                                             upload.setVisibility(View.GONE);
                                             isRunning = true;
+                                            graph.clear();
                                             measureTask.execute();
                                         } else {
                                             activity.setErrorMessage("A measurement was was taken here recently", "More",
@@ -235,10 +239,11 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     }
 
     @Override
-    public void onUpdate(double dB) {
-        this.dBvalue = dB;
-        final String text = String.format(Locale.US, "%.02f", dB) + " dB";
+    public void onUpdate(double averageDB, double instantDB) {
+        this.dBvalue = averageDB;
+        String text = String.format(Locale.US, "%.02f", averageDB) + " dB";
         this.dB.setText(text);
+        this.graph.add(System.currentTimeMillis(), (float) instantDB);
     }
 
     @Override

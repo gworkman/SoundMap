@@ -68,7 +68,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
         if (activity == null) activity = (MainActivity) getActivity();
         prefs = PreferenceManager.getDefaultSharedPreferences(activity);
         mapView = view.findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
+        mapView.onCreate(null);
         mapView.getMapAsync(this);
         locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
     }

@@ -30,17 +30,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activities.MainActivity"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".activities.SettingsActivity"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.osu.sphs.soundmap.activities.MainActivity" />
+        </activity>
+        <activity android:name=".activities.AboutActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.osu.sphs.soundmap.activities.SettingsActivity" />
         </activity>
     </application>
 

@@ -95,6 +95,10 @@ public final class DataPoint {
         return decibels;
     }
 
+    public String getDevice() {
+        return device;
+    }
+
     @Exclude
     public String getNear(Geocoder geocoder) {
         String near = lat + ", " + lon;

@@ -2,6 +2,7 @@ package edu.osu.sphs.soundmap.fragments;
 
 
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
@@ -18,11 +19,13 @@ public class SettingsFragment extends PreferenceFragment {
 
     private FirebaseAuth auth;
     private Preference logoutButton;
+    private Preference aboutButton;
+    private EditTextPreference calibration;
+    private SettingsListener listener;
 
     public SettingsFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -31,6 +34,8 @@ public class SettingsFragment extends PreferenceFragment {
 
         auth = FirebaseAuth.getInstance();
         logoutButton = findPreference(getString(R.string.logout_preference));
+        aboutButton = findPreference(getString(R.string.about_preference));
+        calibration = (EditTextPreference) findPreference(getString(R.string.calibration_pref));
         if (auth.getCurrentUser() == null) {
             logoutButton.setEnabled(false);
         }
@@ -38,10 +43,27 @@ public class SettingsFragment extends PreferenceFragment {
         logoutButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                auth.signOut();
                 logoutButton.setEnabled(false);
+                if (listener != null) listener.logOut();
                 return true;
             }
         });
+
+        aboutButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                //Intent intent = new Intent(getActivity(), AboutActivity.class);
+                //startActivity(intent);
+                return true;
+            }
+        });
+    }
+
+    public void setSettingsListener(SettingsListener listener) {
+        this.listener = listener;
+    }
+
+    public interface SettingsListener {
+        void logOut();
     }
 }

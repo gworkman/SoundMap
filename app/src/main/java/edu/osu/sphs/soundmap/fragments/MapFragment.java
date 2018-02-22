@@ -83,6 +83,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, Values.LOCATION_REQUEST_CODE);
         }
+        updateFragment();
         mapView.onResume();
     }
 

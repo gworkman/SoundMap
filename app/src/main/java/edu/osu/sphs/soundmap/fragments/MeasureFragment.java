@@ -204,7 +204,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                         public void onComplete(@NonNull Task<Location> task) {
                             Location location = task.getResult();
                             if (task.isSuccessful() && location != null && location.hasAccuracy() && location.getAccuracy() < 50) {
-                                String device = Build.MANUFACTURER + " " + Build.PRODUCT;
+                                String device = Build.MANUFACTURER + " " + Build.MODEL;
                                 DataPoint toUpload = new DataPoint(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), dBvalue, device);
 
                                 // create new node in Firebase
@@ -232,7 +232,9 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                     activity.setErrorMessage("Currently in local-only mode", "More",
                             "Although you can record without a microphone, and take multiple measurements in the " +
                                     "same area in a short amount of time, you cannot upload to the database while in local " +
-                                    "only mode. This is to ensure the data collected is accurate and from many different locations.");
+                                    "only mode. This is to ensure the data collected is accurate and from many different " +
+                                    "locations. To upload to the database, please make sure you are logged in and that local " +
+                                    "only mode is turned off.");
                     upload.setVisibility(View.GONE);
                 }
         }
@@ -291,6 +293,6 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     }
 
     private boolean isLocalOnly() {
-        return prefs.getBoolean(Values.LOCAL_ONLY_PREF, false);
+        return prefs.getBoolean(Values.LOCAL_ONLY_PREF, false) || auth.getCurrentUser() == null;
     }
 }

@@ -2,9 +2,11 @@ package edu.osu.sphs.soundmap.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.CoordinatorLayout;
@@ -14,7 +16,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     private List<Fragment> fragments = new ArrayList<>();
     private DatabaseReference data;
     private boolean fabIsSetup = false;
+    private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         setupBottomNav();
         setupFirebase();
         setupPager();
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     /**
@@ -161,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         this.auth.addAuthStateListener(this);
         this.data = FirebaseDatabase.getInstance().getReference(Values.DATA_REFERNCE);
         this.data.addValueEventListener(this);
+
     }
 
     /*
@@ -169,12 +174,13 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
 
     @Override
     public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-        Log.d(TAG, "onAuthStateChanged: auth state was changed, yo");
         this.fragments.remove(2);
         if (firebaseAuth.getCurrentUser() != null) {
             this.fragments.add(2, ProfileFragment.newInstance());
+            prefs.edit().putBoolean(Values.LOCAL_ONLY_PREF, false).apply();
         } else {
             this.fragments.add(2, LoginFragment.newInstance());
+            prefs.edit().putBoolean(Values.LOCAL_ONLY_PREF, false).apply();
         }
         this.pagerAdapter.notifyDataSetChanged();
         this.viewPager.invalidate();
@@ -267,8 +273,10 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Values.SETTINGS_RESULT_CODE) {
-            if (resultCode == Values.SETTINGS_CHANGED) {
-                ((MapFragment) fragments.get(0)).updateFragment();
+            if (resultCode == Values.SETTINGS_LOG_OUT) {
+                this.auth.signOut();
+                finish();
+                startActivity(getIntent());
             }
         }
     }

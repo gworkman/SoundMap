@@ -1,10 +1,12 @@
 package edu.osu.sphs.soundmap.fragments;
 
 import android.Manifest;
-import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -21,14 +23,18 @@ import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Locale;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.activities.MainActivity;
 import edu.osu.sphs.soundmap.util.DataPoint;
+import edu.osu.sphs.soundmap.util.GraphView;
 import edu.osu.sphs.soundmap.util.MeasureTask;
 import edu.osu.sphs.soundmap.util.Values;
 
@@ -37,7 +43,7 @@ import edu.osu.sphs.soundmap.util.Values;
  * Use the {@link MeasureFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MeasureFragment extends Fragment implements View.OnClickListener, MeasureTask.OnUpdateCallback, OnSuccessListener<Location> {
+public class MeasureFragment extends Fragment implements View.OnClickListener, MeasureTask.OnUpdateCallback {
 
     private static final String TAG = "MeasureFragment";
 
@@ -45,15 +51,19 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private TextView dB;
     private FloatingActionButton fab;
     private FloatingActionButton upload;
+    private GraphView graph;
     private boolean isRunning = false;
     private boolean uploadInitialized = false;
+    private boolean localOnlyMode = false;
     private double dBvalue;
     private CountDownTimer chronometer;
     private MeasureTask measureTask;
     private DatabaseReference data;
+    private DatabaseReference user;
+    private FirebaseAuth auth;
     private FusedLocationProviderClient locationProviderClient;
     private SharedPreferences prefs;
-    private Activity activity;
+    private MainActivity activity;
 
     public MeasureFragment() {
         // Required empty public constructor
@@ -85,11 +95,16 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        if (activity == null) activity = getActivity();
+        if (activity == null) activity = (MainActivity) getActivity();
         timer = view.findViewById(R.id.timer);
         dB = view.findViewById(R.id.dB);
-        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+        graph = view.findViewById(R.id.graph_view);
+        prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        data = FirebaseDatabase.getInstance().getReference(Values.DATA_REFERNCE);
+        auth = FirebaseAuth.getInstance();
+        if (auth != null && auth.getCurrentUser() != null && auth.getUid() != null) {
+            user = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid());
+        }
         locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
     }
 
@@ -98,7 +113,8 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fab:
-                if (ActivityCompat.checkSelfPermission(v.getContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                fab = (FloatingActionButton) v;
+                if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
 
                     if (measureTask == null) {
                         measureTask = new MeasureTask();
@@ -106,27 +122,60 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                     }
 
                     if (!isRunning) {
-                        fab = (FloatingActionButton) v;
-                        chronometer = new CountDownTimer(30000, 100) {
-                            @Override
-                            public void onTick(long millisUntilFinished) {
-                                int seconds = (int) (millisUntilFinished / 1000);
-                                int decimal = (int) (millisUntilFinished % 1000 / 100.0);
-                                String timerValue = seconds + "." + decimal + " seconds";
-                                timer.setText(timerValue);
-                            }
+                        localOnlyMode = isLocalOnly();
+                        if (localOnlyMode || isMicPluggedIn()) {
+                            locationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Location> task) {
+                                    Location location = task.getResult();
+                                    if (localOnlyMode || (task.isSuccessful() && location != null && location.hasAccuracy() && location.getAccuracy() < 50)) {
+                                        if (localOnlyMode || activity.canRecord(location)) {
+                                            chronometer = new CountDownTimer(30000, 100) {
+                                                @Override
+                                                public void onTick(long millisUntilFinished) {
+                                                    int seconds = (int) (millisUntilFinished / 1000);
+                                                    int decimal = (int) (millisUntilFinished % 1000 / 100.0);
+                                                    String timerValue = seconds + "." + decimal + " seconds";
+                                                    timer.setText(timerValue);
+                                                }
 
-                            @Override
-                            public void onFinish() {
-                                fab.setImageResource(R.drawable.ic_record);
-                                isRunning = false;
-                                measureTask = null;
-                            }
-                        }.start();
-                        fab.setImageResource(R.drawable.ic_stop);
-                        upload.setVisibility(View.GONE);
-                        isRunning = true;
-                        measureTask.execute();
+                                                @Override
+                                                public void onFinish() {
+                                                    fab.setImageResource(R.drawable.ic_record);
+                                                    isRunning = false;
+                                                    measureTask = null;
+                                                }
+                                            }.start();
+                                            fab.setImageResource(R.drawable.ic_stop);
+                                            upload.setVisibility(View.GONE);
+                                            isRunning = true;
+                                            graph.clear();
+                                            measureTask.execute();
+                                        } else {
+                                            activity.setErrorMessage("A measurement was was taken here recently", "More",
+                                                    "Users are limited from taking consecutive measurements in the " +
+                                                            "same area over a short amount of time in order to encourage an" +
+                                                            " increase in the spread and scope of the data that we are able " +
+                                                            "to collect. If you want to take local measurements without uploading " +
+                                                            "to the database, you can still do so by enabling local-only mode " +
+                                                            "in the settings");
+                                        }
+                                    } else {
+                                        activity.setErrorMessage("Unable to get an accurate device location", "More",
+                                                "Please wait a few seconds to get a better GPS signal, " +
+                                                        "and make sure your location services are turned on in " +
+                                                        "the device settings.");
+                                    }
+                                }
+                            });
+
+                        } else {
+                            activity.setErrorMessage("Microphone is not plugged in", "More",
+                                    "In order to get an accurate measurement, it is necessary to use a " +
+                                            "calibrated microphone. If you do not have a calibrated microphone from " +
+                                            "the research study, you can use the app in local-only mode by going " +
+                                            "to the settings menu.");
+                        }
 
                     } else {
                         chronometer.cancel();
@@ -149,17 +198,54 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                 if (!uploadInitialized) {
                     upload = (FloatingActionButton) v;
                     uploadInitialized = true;
+                } else if (!localOnlyMode) {
+                    locationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Location> task) {
+                            Location location = task.getResult();
+                            if (task.isSuccessful() && location != null && location.hasAccuracy() && location.getAccuracy() < 50) {
+                                String device = Build.MANUFACTURER + " " + Build.MODEL;
+                                DataPoint toUpload = new DataPoint(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), dBvalue, device);
+
+                                // create new node in Firebase
+                                data.push().setValue(toUpload);
+
+                                if (user == null) {
+                                    if (auth != null && auth.getCurrentUser() != null && auth.getUid() != null) {
+                                        user = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid());
+                                    }
+                                }
+
+                                if (user != null) {
+                                    user.push().setValue(toUpload);
+                                }
+                                upload.setVisibility(View.GONE);
+                            } else {
+                                activity.setErrorMessage("Unable to get an accurate location", "More",
+                                        "Please wait a few seconds to get a better GPS signal, " +
+                                                "and make sure your location services are turned on in " +
+                                                "the device settings.");
+                            }
+                        }
+                    });
                 } else {
-                    locationProviderClient.getLastLocation().addOnSuccessListener(this);
+                    activity.setErrorMessage("Currently in local-only mode", "More",
+                            "Although you can record without a microphone, and take multiple measurements in the " +
+                                    "same area in a short amount of time, you cannot upload to the database while in local " +
+                                    "only mode. This is to ensure the data collected is accurate and from many different " +
+                                    "locations. To upload to the database, please make sure you are logged in and that local " +
+                                    "only mode is turned off.");
+                    upload.setVisibility(View.GONE);
                 }
         }
     }
 
     @Override
-    public void onUpdate(double dB) {
-        this.dBvalue = dB;
-        final String text = String.format(Locale.US, "%.02f", dB) + " dB";
+    public void onUpdate(double averageDB, double instantDB) {
+        this.dBvalue = averageDB;
+        String text = String.format(Locale.US, "%.02f", averageDB) + " dB";
         this.dB.setText(text);
+        this.graph.add(System.currentTimeMillis(), (float) instantDB);
     }
 
     @Override
@@ -190,23 +276,23 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         }
     }
 
-    @Override
-    public void onSuccess(Location location) {
-        DataPoint toUpload = new DataPoint(getContext(), System.currentTimeMillis(), location.getLatitude(),
-                location.getLongitude(), this.dBvalue);
-
-        // create new node in Firebase
-        DatabaseReference newNode = data.push();
-        newNode.child("Decibels").setValue(toUpload.getDecibels());
-        newNode.child("Lat").setValue(toUpload.getLat());
-        newNode.child("Long").setValue(toUpload.getLon());
-        newNode.child("Time").setValue(toUpload.getDate());
-        newNode.child("Device").setValue(Build.MANUFACTURER + " " + Build.MODEL);
-
-        upload.setVisibility(View.GONE);
+    private boolean isMicPluggedIn() {
+        boolean micIn = false;
+        AudioManager manager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            AudioDeviceInfo[] devices = manager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+            for (AudioDeviceInfo device : devices) {
+                micIn = (device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADSET) ||
+                        (device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) ||
+                        micIn;
+            }
+        } else {
+            micIn = manager.isWiredHeadsetOn();
+        }
+        return micIn;
     }
 
-    public void updateFragment() {
-        data = FirebaseDatabase.getInstance().getReference(prefs.getString(getString(R.string.data_source_pref), "iOS"));
+    private boolean isLocalOnly() {
+        return prefs.getBoolean(Values.LOCAL_ONLY_PREF, false) || auth.getCurrentUser() == null;
     }
 }

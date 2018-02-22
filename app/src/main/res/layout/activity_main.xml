@@ -24,6 +24,12 @@
         android:layout_height="match_parent"
         android:layout_above="@id/bottomNavigationView"/>
 
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/coordinator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bottomNavigationView" />
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_upload"
         android:layout_width="64dp"
@@ -36,6 +42,7 @@
         android:visibility="gone"
         app:backgroundTint="@color/osuGreyLight" />
 
+    <!-- consider a bottom margin of -72dp -->
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="96dp"

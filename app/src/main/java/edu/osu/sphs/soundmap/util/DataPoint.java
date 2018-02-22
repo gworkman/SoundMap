@@ -1,7 +1,12 @@
 package edu.osu.sphs.soundmap.util;
 
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.text.format.DateFormat;
+import android.util.Log;
+
+import com.google.firebase.database.Exclude;
 
 import java.util.Calendar;
 import java.util.Comparator;
@@ -15,23 +20,30 @@ import java.util.TimeZone;
 
 public final class DataPoint {
 
+
+    private static final String TAG = "DataPoint";
     private static final int DAY_MILLIS = 86400000;
     private static final Calendar today = getToday();
 
-    private Context context;
     private long date;
     private double lat;
     private double lon;
-    private double measurement;
+    private double decibels;
+    private String device;
 
-    public DataPoint(Context context, long date, double lat, double lon, double measurement) {
-        this.context = context;
+    public DataPoint() {
+        // empty, required for firebase
+    }
+
+    public DataPoint(long date, double lat, double lon, double decibels, String device) {
         this.date = date;
         this.lat = lat;
         this.lon = lon;
-        this.measurement = measurement;
+        this.decibels = decibels;
+        this.device = device;
     }
 
+    @Exclude
     private static Calendar getToday() {
         Calendar today = Calendar.getInstance(TimeZone.getDefault());
         today.set(Calendar.HOUR, 0);
@@ -41,25 +53,28 @@ public final class DataPoint {
         return today;
     }
 
-    private String getFormattedDate() {
+    @Exclude
+    private String getFormattedDate(Context context) {
         Date formatted = new Date(this.date);
-        return DateFormat.getDateFormat(this.context).format(formatted);
+        return DateFormat.getDateFormat(context).format(formatted);
     }
 
-    private String getFormattedTime() {
+    @Exclude
+    private String getFormattedTime(Context context) {
         Date formatted = new Date(this.date);
-        return DateFormat.getTimeFormat(this.context).format(formatted);
+        return DateFormat.getTimeFormat(context).format(formatted);
     }
 
-    public String getTimeString() {
+    @Exclude
+    public String getTimeString(Context context) {
         String timeString;
         long todayInMillis = today.getTimeInMillis();
         if (this.date - todayInMillis > 0) {
-            timeString = getFormattedTime();
+            timeString = getFormattedTime(context);
         } else if (todayInMillis - this.date < DAY_MILLIS) {
             timeString = "Yesterday";
         } else {
-            timeString = getFormattedDate();
+            timeString = getFormattedDate(context);
         }
         return timeString;
     }
@@ -77,9 +92,44 @@ public final class DataPoint {
     }
 
     public double getDecibels() {
-        return measurement;
+        return decibels;
     }
 
+    public String getDevice() {
+        return device;
+    }
+
+    @Exclude
+    public String getNear(Geocoder geocoder) {
+        String near = lat + ", " + lon;
+        if (Geocoder.isPresent()) {
+            try {
+                Address nearby = geocoder.getFromLocation(lat, lon, 1).get(0);
+                if ((near = nearby.getFeatureName()) != null && !near.matches("\\d+")) {
+                    near = "Near " + near;
+                    Log.d(TAG, "getNear: feature " + near);
+                } else if ((near = nearby.getAddressLine(0)) != null) {
+                    near = "Near " + near.substring(0, near.indexOf(','));
+                    Log.d(TAG, "getNear: addressline " + near);
+                } else if ((near = nearby.getLocality()) != null) {
+                    near = "Near " + near;
+                    Log.d(TAG, "getNear: locality " + near);
+                } else {
+                    near = lat + ", " + lon;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        return near;
+    }
+
+    @Override
+    public String toString() {
+        return "Date: " + this.date + " Lat: " + this.lat + " Long: " + this.lon + " dB(A): " + this.decibels;
+    }
 
     public static class Compare implements Comparator<DataPoint> {
         @Override

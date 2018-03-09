@@ -2,7 +2,6 @@ package edu.osu.sphs.soundmap.fragments;
 
 
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
@@ -20,7 +19,7 @@ public class SettingsFragment extends PreferenceFragment {
     private FirebaseAuth auth;
     private Preference logoutButton;
     private Preference aboutButton;
-    private EditTextPreference calibration;
+    private Preference calibration;
     private SettingsListener listener;
 
     public SettingsFragment() {
@@ -35,7 +34,7 @@ public class SettingsFragment extends PreferenceFragment {
         auth = FirebaseAuth.getInstance();
         logoutButton = findPreference(getString(R.string.logout_preference));
         aboutButton = findPreference(getString(R.string.about_preference));
-        calibration = (EditTextPreference) findPreference(getString(R.string.calibration_pref));
+        calibration = findPreference("calibration_button");
         if (auth.getCurrentUser() == null) {
             logoutButton.setEnabled(false);
         }
@@ -57,6 +56,14 @@ public class SettingsFragment extends PreferenceFragment {
                 return true;
             }
         });
+
+        calibration.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (listener != null) listener.calibrate();
+                return true;
+            }
+        });
     }
 
     public void setSettingsListener(SettingsListener listener) {
@@ -65,5 +72,7 @@ public class SettingsFragment extends PreferenceFragment {
 
     public interface SettingsListener {
         void logOut();
+
+        void calibrate();
     }
 }

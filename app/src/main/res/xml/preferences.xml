@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <EditTextPreference
-        android:defaultValue="0.0"
-        android:key="@string/calibration_pref"
-        android:numeric="decimal"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
+    <Preference
+        android:key="calibration_button"
         android:summary="@string/calibrate_summary"
         android:title="@string/calibrate_title" />
 
     <SwitchPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:key="@string/local_only_pref"
         android:summary="@string/local_only_summary"
         android:title="@string/local_only_title" />

@@ -263,7 +263,13 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
     @Override
     public double getCalibration() {
-        return Double.valueOf(prefs.getString(getResources().getString(R.string.calibration_pref), "0"));
+        float calibration = 0;
+        try {
+            calibration = prefs.getFloat(Values.CALIBRATION_PREF, 0);
+        } catch (ClassCastException e) {
+            activity.resetCalibration();
+        }
+        return calibration;
     }
 
     @Override

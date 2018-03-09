@@ -16,6 +16,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -305,16 +306,14 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
 
     public boolean canRecord(Location location) {
         long time = System.currentTimeMillis() - 86400000;
-        if (points.size() > 0) {
-            int i = 0;
-            DataPoint point;
-            do {
-                point = points.get(i);
-                if (Values.distance(location.getLatitude(), location.getLongitude(), point.getLat(), point.getLon()) < 0.25) {
-                    return false;
-                }
-                i++;
-            } while (point.getDate() > time && i < points.size());
+        Log.d(TAG, "canRecord: points is " + points);
+        DataPoint point;
+        for (int i = 0; i < points.size(); i++) {
+            point = points.get(i);
+            if (point.getDate() < time) break;
+            if (Values.distance(location.getLatitude(), location.getLongitude(), point.getLat(), point.getLon()) < 0.25) {
+                return false;
+            }
         }
         return true;
     }
@@ -354,5 +353,9 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                 .setCancelable(true)
                 .create();
         dialog.show();
+    }
+
+    public void resetCalibration() {
+        this.prefs.edit().putFloat(Values.CALIBRATION_PREF, 0).apply();
     }
 }

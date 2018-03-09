@@ -13,7 +13,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="32dp"
         android:text="30.0 seconds"
-        android:textSize="40sp" />
+        android:textSize="32sp" />
 
     <TextView
         android:id="@+id/dB"
@@ -22,7 +22,7 @@
         android:layout_below="@id/timer"
         android:layout_centerHorizontal="true"
         android:text="0 dB"
-        android:textSize="60sp" />
+        android:textSize="48sp" />
 
     <edu.osu.sphs.soundmap.util.GraphView
         android:id="@+id/graph_view"

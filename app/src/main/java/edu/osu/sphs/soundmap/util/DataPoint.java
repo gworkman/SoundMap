@@ -128,7 +128,7 @@ public final class DataPoint {
 
     @Override
     public String toString() {
-        return "Date: " + this.date + " Lat: " + this.lat + " Long: " + this.lon + " dB(A): " + this.decibels;
+        return "Date: " + (this.date - System.currentTimeMillis()) / DAY_MILLIS + " Lat: " + this.lat + " Long: " + this.lon + " dB(A): " + this.decibels;
     }
 
     public static class Compare implements Comparator<DataPoint> {

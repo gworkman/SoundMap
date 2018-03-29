@@ -4,12 +4,16 @@ package edu.osu.sphs.soundmap.fragments;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.SwitchPreference;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import edu.osu.sphs.soundmap.R;
+import edu.osu.sphs.soundmap.util.Values;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -20,6 +24,7 @@ public class SettingsFragment extends PreferenceFragment {
     private Preference logoutButton;
     private Preference aboutButton;
     private Preference calibration;
+    private SwitchPreference localOnlyMode;
     private SettingsListener listener;
 
     public SettingsFragment() {
@@ -35,6 +40,8 @@ public class SettingsFragment extends PreferenceFragment {
         logoutButton = findPreference(getString(R.string.logout_preference));
         aboutButton = findPreference(getString(R.string.about_preference));
         calibration = findPreference("calibration_button");
+        localOnlyMode = (SwitchPreference) findPreference(getString(R.string.local_only_pref));
+        if (auth.getCurrentUser() == null) localOnlyMode.setChecked(true);
         if (auth.getCurrentUser() == null) {
             logoutButton.setEnabled(false);
         }
@@ -60,7 +67,11 @@ public class SettingsFragment extends PreferenceFragment {
         calibration.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                if (listener != null) listener.calibrate();
+                if (listener != null) {
+                    listener.calibrate();
+                    DatabaseReference user = FirebaseDatabase.getInstance().getReference().child(Values.USER_NODE).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                    user.child("calibrated").setValue(true);
+                }
                 return true;
             }
         });
@@ -72,7 +83,6 @@ public class SettingsFragment extends PreferenceFragment {
 
     public interface SettingsListener {
         void logOut();
-
         void calibrate();
     }
 }

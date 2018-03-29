@@ -13,8 +13,10 @@ public class Values {
     public static final int AUDIO_REQUEST_CODE = 12;
     public static final int SETTINGS_RESULT_CODE = 13;
     public static final int SETTINGS_LOG_OUT = 14;
-    public static final String USER_NODE = "users";
-    public static final String DATA_REFERNCE = "android-test";
+    public static final int SETTINGS_CALIBRATION_UPDATED = 15;
+    public static final String CALIBRATION_PASSCODE = "BUCKS";
+    public static final String USER_NODE = "Users";
+    public static final String DATA_REFERNCE = "Records";
     public static final String LOCAL_ONLY_PREF = "local_only_preference";
     public static final String CALIBRATION_PREF = "calibration_preference";
     public static final double A_WEIGHT_COEFFICIENTS[] =

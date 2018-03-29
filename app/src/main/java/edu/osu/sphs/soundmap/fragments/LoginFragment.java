@@ -49,7 +49,6 @@ public class LoginFragment extends Fragment implements View.OnClickListener, OnC
      *
      * @return A new instance of fragment LoginFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static LoginFragment newInstance() {
         LoginFragment fragment = new LoginFragment();
         return fragment;
@@ -254,7 +253,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener, OnC
         }
 
         boolean validPass(String pass) {
-            return pass.length() > 7 && pass.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
+            return pass.length() > 6 /*&& pass.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")*/;
         }
     }
 

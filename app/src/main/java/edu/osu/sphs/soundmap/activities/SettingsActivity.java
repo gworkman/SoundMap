@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -23,8 +22,8 @@ import edu.osu.sphs.soundmap.util.Values;
 
 public class SettingsActivity extends AppCompatActivity implements SettingsFragment.SettingsListener {
 
-    private static final String passcode = "BUCKS";
-    private boolean logout = false;
+    private static final String passcode = Values.CALIBRATION_PASSCODE;
+    private int result = RESULT_OK;
     private SharedPreferences prefs;
 
     @Override
@@ -44,8 +43,7 @@ public class SettingsActivity extends AppCompatActivity implements SettingsFragm
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (logout) setResult(Values.SETTINGS_LOG_OUT);
-                else setResult(RESULT_OK);
+                setResult(result);
                 finish();
                 break;
             default:
@@ -56,7 +54,8 @@ public class SettingsActivity extends AppCompatActivity implements SettingsFragm
 
     @Override
     public void logOut() {
-        this.logout = true;
+        result = Values.SETTINGS_LOG_OUT;
+        finish();
     }
 
     @Override
@@ -85,10 +84,8 @@ public class SettingsActivity extends AppCompatActivity implements SettingsFragm
             calibration = calibration * -1;
         }
 
-        Log.d("SettingsActivity", "calibrate: calibration is " + calibration);
         digits.setValue((int) calibration);
         decimals.setValue((int) ((calibration - (int) calibration) * 10));
-        Log.d("SettingsActivity", "calibrate: decimals is " + (int) (calibration - (int) calibration) * 10);
 
         final AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Calibration Password")
@@ -122,7 +119,8 @@ public class SettingsActivity extends AppCompatActivity implements SettingsFragm
                             float cal = (float) (digits.getValue() + .1 * decimals.getValue());
                             if (sign.getValue() == 1) cal *= -1;
                             prefs.edit().putFloat(Values.CALIBRATION_PREF, cal).apply();
-                            Toast.makeText(SettingsActivity.this, "calibration updated", Toast.LENGTH_SHORT).show();
+                            result = Values.SETTINGS_CALIBRATION_UPDATED;
+                            Toast.makeText(SettingsActivity.this, "Calibration was updated", Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
                         }
                     }
@@ -130,5 +128,11 @@ public class SettingsActivity extends AppCompatActivity implements SettingsFragm
             }
         });
         dialog.show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        setResult(result);
     }
 }

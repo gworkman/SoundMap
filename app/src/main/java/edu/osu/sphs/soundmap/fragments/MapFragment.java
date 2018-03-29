@@ -50,7 +50,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
      *
      * @return A new instance of fragment MapFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static MapFragment newInstance() {
         MapFragment fragment = new MapFragment();
         return fragment;

@@ -58,7 +58,6 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     private double dBvalue;
     private CountDownTimer chronometer;
     private MeasureTask measureTask;
-    private DatabaseReference data;
     private DatabaseReference user;
     private FirebaseAuth auth;
     private FusedLocationProviderClient locationProviderClient;
@@ -75,7 +74,6 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
      *
      * @return A new instance of fragment MeasureFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static MeasureFragment newInstance() {
         MeasureFragment fragment = new MeasureFragment();
         return fragment;
@@ -100,10 +98,9 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         dB = view.findViewById(R.id.dB);
         graph = view.findViewById(R.id.graph_view);
         prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-        data = FirebaseDatabase.getInstance().getReference(Values.DATA_REFERNCE);
         auth = FirebaseAuth.getInstance();
         if (auth != null && auth.getCurrentUser() != null && auth.getUid() != null) {
-            user = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid());
+            user = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid()).child(Values.DATA_REFERNCE);
         }
         locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
     }
@@ -123,59 +120,49 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
 
                     if (!isRunning) {
                         localOnlyMode = isLocalOnly();
-                        if (localOnlyMode || isMicPluggedIn()) {
-                            locationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Location> task) {
-                                    Location location = task.getResult();
-                                    if (localOnlyMode || (task.isSuccessful() && location != null && location.hasAccuracy() && location.getAccuracy() < 50)) {
-                                        if (localOnlyMode || activity.canRecord(location)) {
-                                            chronometer = new CountDownTimer(30000, 100) {
-                                                @Override
-                                                public void onTick(long millisUntilFinished) {
-                                                    int seconds = (int) (millisUntilFinished / 1000);
-                                                    int decimal = (int) (millisUntilFinished % 1000 / 100.0);
-                                                    String timerValue = seconds + "." + decimal + " seconds";
-                                                    timer.setText(timerValue);
-                                                }
-
-                                                @Override
-                                                public void onFinish() {
-                                                    fab.setImageResource(R.drawable.ic_record);
-                                                    isRunning = false;
-                                                    measureTask = null;
-                                                }
-                                            }.start();
-                                            fab.setImageResource(R.drawable.ic_stop);
-                                            upload.setVisibility(View.GONE);
-                                            isRunning = true;
-                                            graph.clear();
-                                            measureTask.execute();
-                                        } else {
-                                            activity.setErrorMessage("A measurement was was taken here recently", "More",
-                                                    "Users are limited from taking consecutive measurements in the " +
-                                                            "same area over a short amount of time in order to encourage an" +
-                                                            " increase in the spread and scope of the data that we are able " +
-                                                            "to collect. If you want to take local measurements without uploading " +
-                                                            "to the database, you can still do so by enabling local-only mode " +
-                                                            "in the settings");
-                                        }
-                                    } else {
-                                        activity.setErrorMessage("Unable to get an accurate device location", "More",
-                                                "Please wait a few seconds to get a better GPS signal, " +
-                                                        "and make sure your location services are turned on in " +
-                                                        "the device settings.");
-                                    }
-                                }
-                            });
-
-                        } else {
+                        if (!localOnlyMode && !isMicPluggedIn()) {
                             activity.setErrorMessage("Microphone is not plugged in", "More",
                                     "In order to get an accurate measurement, it is necessary to use a " +
                                             "calibrated microphone. If you do not have a calibrated microphone from " +
                                             "the research study, you can use the app in local-only mode by going " +
                                             "to the settings menu.");
                         }
+
+                        locationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Location> task) {
+                                Location location = task.getResult();
+                                if (localOnlyMode || (task.isSuccessful() && location != null && location.hasAccuracy() && location.getAccuracy() < 50)) {
+                                    chronometer = new CountDownTimer(30000, 100) {
+                                        @Override
+                                        public void onTick(long millisUntilFinished) {
+                                            int seconds = (int) (millisUntilFinished / 1000);
+                                            int decimal = (int) (millisUntilFinished % 1000 / 100.0);
+                                            String timerValue = seconds + "." + decimal + " seconds";
+                                            timer.setText(timerValue);
+                                        }
+
+                                        @Override
+                                        public void onFinish() {
+                                            fab.setImageResource(R.drawable.ic_record);
+                                            isRunning = false;
+                                            measureTask = null;
+                                        }
+                                    }.start();
+                                    fab.setImageResource(R.drawable.ic_stop);
+                                    upload.setVisibility(View.GONE);
+                                    isRunning = true;
+                                    graph.clear();
+                                    measureTask.execute();
+
+                                } else {
+                                    activity.setErrorMessage("Unable to get an accurate device location", "More",
+                                            "Please wait a few seconds to get a better GPS signal, " +
+                                                    "and make sure your location services are turned on in " +
+                                                    "the device settings.");
+                                }
+                            }
+                        });
 
                     } else {
                         chronometer.cancel();
@@ -185,7 +172,6 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                         upload.setVisibility(View.GONE);
                         isRunning = false;
                         measureTask.cancel(true);
-                        measureTask = null;
                     }
 
                 } else {
@@ -205,14 +191,11 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                             Location location = task.getResult();
                             if (task.isSuccessful() && location != null && location.hasAccuracy() && location.getAccuracy() < 50) {
                                 String device = Build.MANUFACTURER + " " + Build.MODEL;
-                                DataPoint toUpload = new DataPoint(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), dBvalue, device);
-
-                                // create new node in Firebase
-                                data.push().setValue(toUpload);
+                                DataPoint toUpload = new DataPoint(System.currentTimeMillis() / 1000, location.getLatitude(), location.getLongitude(), dBvalue, getCalibration(), device, auth.getUid());
 
                                 if (user == null) {
                                     if (auth != null && auth.getCurrentUser() != null && auth.getUid() != null) {
-                                        user = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid());
+                                        user = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid()).child(Values.DATA_REFERNCE);
                                     }
                                 }
 
@@ -252,7 +235,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
     public void onFinish(int result) {
         switch (result) {
             case MeasureTask.RESULT_OK:
-                upload.setVisibility(View.VISIBLE);
+                if (this.auth.getCurrentUser() != null) upload.setVisibility(View.VISIBLE);
                 this.timer.setText(R.string.end_time);
                 break;
             case MeasureTask.RESULT_CANCELLED:
@@ -302,3 +285,17 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
         return prefs.getBoolean(Values.LOCAL_ONLY_PREF, false) || auth.getCurrentUser() == null;
     }
 }
+
+
+// This can be used to display a good high quality error message to the user about nearness
+
+/*
+activity.setErrorMessage("A measurement was was taken here recently", "More",
+        "Users are limited from taking consecutive measurements in the " +
+        "same area over a short amount of time in order to encourage an" +
+        " increase in the spread and scope of the data that we are able " +
+        "to collect. If you want to take local measurements without uploading " +
+        "to the database, you can still do so by enabling local-only mode " +
+        "in the settings");
+*/
+

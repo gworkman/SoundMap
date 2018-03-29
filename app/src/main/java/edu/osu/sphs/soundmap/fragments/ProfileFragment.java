@@ -68,7 +68,6 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
      *
      * @return A new instance of fragment ProfileFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static ProfileFragment newInstance() {
         ProfileFragment fragment = new ProfileFragment();
         return fragment;
@@ -105,7 +104,7 @@ public class ProfileFragment extends Fragment implements OnMapReadyCallback, Val
 
         auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null && auth != null) {
-            data = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getUid());
+            data = FirebaseDatabase.getInstance().getReference(Values.USER_NODE).child(auth.getCurrentUser().getUid()).child(Values.DATA_REFERNCE);
             data.addValueEventListener(this);
         }
     }

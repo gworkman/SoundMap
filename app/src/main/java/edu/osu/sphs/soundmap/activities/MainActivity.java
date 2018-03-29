@@ -3,7 +3,6 @@ package edu.osu.sphs.soundmap.activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -16,7 +15,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +26,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -51,8 +50,6 @@ import edu.osu.sphs.soundmap.util.ViewPagerAdapter;
  */
 public class MainActivity extends AppCompatActivity implements FirebaseAuth.AuthStateListener,
         ViewPager.OnPageChangeListener, ValueEventListener {
-
-    private static final String TAG = "MainActivity";
 
     private BottomNavigationView bottomNavigationView;
     private ViewPager viewPager;
@@ -195,8 +192,12 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     public void onDataChange(DataSnapshot dataSnapshot) {
         this.points.clear();
         for (DataSnapshot child : dataSnapshot.getChildren()) {
-            DataPoint point = child.getValue(DataPoint.class);
-            this.points.add(point);
+            try {
+                DataPoint point = child.getValue(DataPoint.class);
+                this.points.add(point);
+            } catch (DatabaseException e) {
+                e.printStackTrace();
+            }
         }
 
         Collections.sort(points, new DataPoint.Compare());
@@ -263,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         switch (item.getItemId()) {
             case R.id.menu_settings:
                 Intent intent = new Intent(this, SettingsActivity.class);
-                startActivityForResult(intent, Values.SETTINGS_RESULT_CODE);
+                startActivity/*ForResult*/(intent/*, Values.SETTINGS_RESULT_CODE*/);
                 break;
             default:
                 return false;
@@ -271,16 +272,19 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         return true;
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == Values.SETTINGS_RESULT_CODE) {
-            if (resultCode == Values.SETTINGS_LOG_OUT) {
-                this.auth.signOut();
-                finish();
-                startActivity(getIntent());
-            }
-        }
-    }
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (requestCode == Values.SETTINGS_RESULT_CODE) {
+//            if (resultCode == Values.SETTINGS_LOG_OUT) {
+//                this.auth.signOut();
+//                finish();
+//                startActivity(getIntent());
+//            } else if (resultCode == Values.SETTINGS_CALIBRATION_UPDATED && auth.getCurrentUser() != null) {
+//                DatabaseReference user = FirebaseDatabase.getInstance().getReference().child(Values.USER_NODE).child(auth.getCurrentUser().getUid());
+//                user.child("Calibrated").setValue(true);
+//            }
+//        }
+//    }
 
     /*
      * These are methods that implement Fragment Callback
@@ -304,19 +308,18 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         }
     }
 
-    public boolean canRecord(Location location) {
-        long time = System.currentTimeMillis() - 86400000;
-        Log.d(TAG, "canRecord: points is " + points);
-        DataPoint point;
-        for (int i = 0; i < points.size(); i++) {
-            point = points.get(i);
-            if (point.getDate() < time) break;
-            if (Values.distance(location.getLatitude(), location.getLongitude(), point.getLat(), point.getLon()) < 0.25) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    public boolean canRecord(Location location) {
+//        long time = System.currentTimeMillis() - 86400000;
+//        DataPoint point;
+//        for (int i = 0; i < points.size(); i++) {
+//            point = points.get(i);
+//            if (point.getTime() < time) break;
+//            if (Values.distance(location.getLatitude(), location.getLongitude(), point.getLat(), point.getLon()) < 0.25) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
     public void setErrorMessage(String message) {
         Snackbar.make(coordinator, message, Snackbar.LENGTH_LONG).show();

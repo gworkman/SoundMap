@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.LongSparseArray;
 import android.view.View;
 
@@ -130,13 +129,6 @@ public class GraphView extends View {
             ylabelHeight = 1.25f * (labelMetrics.descent - labelMetrics.ascent);
             ylabelWidth = labels.measureText(ylabel);
         }
-
-        Log.d(TAG, "init: maxX is " + maxX);
-        Log.d(TAG, "init: maxY is " + maxY);
-        Log.d(TAG, "init: graphStartX is " + graphStartX);
-        Log.d(TAG, "init: graphStartY is " + graphStartY);
-        Log.d(TAG, "init: graphEndX is " + graphEndX);
-        Log.d(TAG, "init: graphEndY is " + graphEndY);
 
 
         a.recycle();

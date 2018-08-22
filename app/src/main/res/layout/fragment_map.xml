@@ -10,4 +10,42 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:background="@drawable/round_background">
+
+        <CheckBox
+            android:id="@+id/safe_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:buttonTint="@color/green"
+            android:text="Safe" />
+
+        <CheckBox
+            android:id="@+id/limited_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:checked="true"
+            android:buttonTint="@color/yellow"
+            android:layout_toEndOf="@id/safe_check"
+            android:text="Moderate"/>
+
+        <CheckBox
+            android:id="@+id/unsafe_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:checked="true"
+            android:buttonTint="@color/red"
+            android:layout_toEndOf="@id/limited_check"
+            android:text="Unsafe"/>
+
+    </RelativeLayout>
+
 </RelativeLayout>

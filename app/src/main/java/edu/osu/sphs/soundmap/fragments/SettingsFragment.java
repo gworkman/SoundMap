@@ -69,8 +69,6 @@ public class SettingsFragment extends PreferenceFragment {
             public boolean onPreferenceClick(Preference preference) {
                 if (listener != null) {
                     listener.calibrate();
-                    DatabaseReference user = FirebaseDatabase.getInstance().getReference().child(Values.USER_NODE).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-                    user.child("calibrated").setValue(true);
                 }
                 return true;
             }

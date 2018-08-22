@@ -172,6 +172,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                         upload.setVisibility(View.GONE);
                         isRunning = false;
                         measureTask.cancel(true);
+                        measureTask = null;
                     }
 
                 } else {
@@ -242,6 +243,7 @@ public class MeasureFragment extends Fragment implements View.OnClickListener, M
                 upload.setVisibility(View.GONE);
                 break;
         }
+        this.measureTask = null;
     }
 
     @Override

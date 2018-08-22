@@ -16,6 +16,10 @@ import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import edu.osu.sphs.soundmap.R;
 import edu.osu.sphs.soundmap.fragments.SettingsFragment;
 import edu.osu.sphs.soundmap.util.Values;
@@ -121,6 +125,8 @@ public class SettingsActivity extends AppCompatActivity implements SettingsFragm
                             prefs.edit().putFloat(Values.CALIBRATION_PREF, cal).apply();
                             result = Values.SETTINGS_CALIBRATION_UPDATED;
                             Toast.makeText(SettingsActivity.this, "Calibration was updated", Toast.LENGTH_SHORT).show();
+                            DatabaseReference user = FirebaseDatabase.getInstance().getReference().child(Values.USER_NODE).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            user.child("calibrated").setValue(true);
                             dialog.dismiss();
                         }
                     }

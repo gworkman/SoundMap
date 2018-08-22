@@ -13,6 +13,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -39,6 +41,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
     private GoogleMap googleMap;
     private MainActivity activity;
     private SharedPreferences prefs;
+
+    public CheckBox safe, moderate, unsafe;
 
     public MapFragment() {
         // Required empty public constructor
@@ -70,6 +74,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
         mapView.onCreate(null);
         mapView.getMapAsync(this);
         locationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
+        safe = view.findViewById(R.id.safe_check);
+        moderate = view.findViewById(R.id.limited_check);
+        unsafe = view.findViewById(R.id.unsafe_check);
+        safe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                updateFragment();
+            }
+        });
+        moderate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                updateFragment();
+            }
+        });
+        unsafe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                updateFragment();
+            }
+        });
     }
 
     @Override
@@ -119,5 +144,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, OnSucce
             this.googleMap.clear();
             activity.addPointsToMap(this.googleMap);
         }
+    }
+
+    public boolean isSafeChecked() {
+        return safe.isChecked();
+    }
+
+    public boolean isModerateChecked() {
+        return moderate.isChecked();
+    }
+
+    public boolean isUnsafeChecked() {
+        return unsafe.isChecked();
     }
 }

@@ -15,4 +15,8 @@
     <color name="loginStroke">#acacac</color>
 
     <color name="dark">#8d606060</color>
+
+    <color name="green">#00c853</color>
+    <color name="yellow">#ffeb3b</color>
+    <color name="red">#d32f2f</color>
 </resources>

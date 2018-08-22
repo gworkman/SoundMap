@@ -292,15 +292,15 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
 
     public void addPointsToMap(GoogleMap map) {
         for (DataPoint point : points) {
-            if (point.getDecibels() < 70) {
+            if (point.getDecibels() < 70 && ((MapFragment) this.fragments.get(0)).isSafeChecked()) {
                 map.addMarker(new MarkerOptions().position(new LatLng(point.getLat(), point.getLon()))
                         .title(String.format(Locale.getDefault(), "%.02f dB", point.getDecibels()))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-            } else if (point.getDecibels() < 90) {
+            } else if (point.getDecibels() < 90 && point.getDecibels() > 70 && ((MapFragment) this.fragments.get(0)).isModerateChecked()) {
                 map.addMarker(new MarkerOptions().position(new LatLng(point.getLat(), point.getLon()))
                         .title(String.format(Locale.getDefault(), "%.02f dB", point.getDecibels()))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-            } else {
+            } else if (point.getDecibels() >= 90 && ((MapFragment) this.fragments.get(0)).isUnsafeChecked()){
                 map.addMarker(new MarkerOptions().position(new LatLng(point.getLat(), point.getLon()))
                         .title(String.format(Locale.getDefault(), "%.02f dB", point.getDecibels()))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
